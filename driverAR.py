@@ -11,6 +11,7 @@ class PythonDriver(AbstractDriverAR):
         self.mock = mock
         if mock:
             self.DATA_FILE = "mock_data.dat"
+            #TODO create driver self.dev stub 
         else:
             self.DATA_FILE = "store_data.dat" #TODO parametrize on init
             self.dev, self.cfg_desired = self.__init_driver()

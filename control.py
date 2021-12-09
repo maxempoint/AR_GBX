@@ -41,7 +41,7 @@ def handle_mod_data(game, gui, driver):
 
 EXPORT_FILENAME = "new_mod_data.dat"
 #Init driver
-use_mock_data = False
+use_mock_data = True
 if use_mock_data:
     driver = driverAR.PythonDriver(EXPORT_FILENAME, mock=use_mock_data)
 else:
