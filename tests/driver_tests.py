@@ -19,7 +19,15 @@ class TestDriver(unittest.TestCase):
 
     def test02_read_data(self):
         self.driver.read_data()
+    
+    def test03_read_then_write(self):
+        self.driver.read_data()
+        self.driver.write_data_to_device(1)
 
+    def test04_write_then_read(self):
+        self.driver.write_data_to_device(1)
+        self.driver.read_data()
+        
 
 if __name__ == '__main__':
     unittest.main()
