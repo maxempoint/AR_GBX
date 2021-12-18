@@ -1,6 +1,9 @@
-from abstract_userinterface import UserAction, ParsingReturnValues, GameCheatData, GameCheat, ViewModes
+from abstract_userinterface import UserInterface, UserAction, ParsingReturnValues, GameCheatData, GameCheat, ViewModes
 
-class CommandLineInterface():
+class CommandLineInterface(UserInterface):
+
+    def __init__(self):
+        self.actionDict = {"A": UserAction.SHOW_ALL_DATA_FROM_AR, "M": UserAction.MODIFY_DATA, "E": UserAction.EXPORT_ALL_DATA, "D": UserAction.DELETE_SINGLE_GAME, "q": UserAction.END_PROGRAM}
 
     def get_user_action(self) -> UserAction:
         print("What do you want?")
@@ -14,22 +17,16 @@ class CommandLineInterface():
             print("M: Modify a Cheatcode entry")
             print("q: end program")
             return UserAction.NO_ACTION
-        elif i == "A":
-            return UserAction.SHOW_ALL_DATA_FROM_AR
-        elif i == "M":
-            print("Entering Modifiyng Mode -- Type 'q' to quit")
-            return UserAction.MODIFY_DATA
-        elif i == "E":
-            return UserAction.EXPORT_ALL_DATA
-        elif i == "D":
-            return UserAction.DELETE_SINGLE_GAME
-        elif i == "q":
-            return UserAction.END_PROGRAM
         else:
-            return UserAction.NO_ACTION
+            try:
+                action = self.actionDict[i]
+                return action
+            except KeyError:
+                print("No such action")
+                return UserAction.NO_ACTION
     
     #TODO pretty print <- depends on Data format 
-    def update_view(self, data, mode):
+    def update_view(self, data: GameCheatData, mode):
         if mode == ViewModes.PRINT_ALL:
             for game in data.gameCheats:
                 print("--------------- All names ---------------")
@@ -40,7 +37,7 @@ class CommandLineInterface():
                 print(game.get_cheatCodeAddresses())
         elif mode == ViewModes.PRINT_GAME:
             try:
-                print(data.get_gameName())
+                print(data.gameCheats[0].get_gameName())
             except Exception as e:
                 self.print_error("Exception: " + e)
         else:

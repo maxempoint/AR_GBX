@@ -40,6 +40,7 @@ def handle_mod_data(game, gui, driver):
             gui.print_error("Action is not possible")
 
 EXPORT_FILENAME = "new_mod_data.dat"
+IMPORT_FILENAME = "imported_data.dat"
 #Init driver
 use_mock_data = True
 if use_mock_data:
@@ -51,13 +52,13 @@ else:
     #TODO interprocess communication (e.g. queue) instead of these files
 
 
-gameCheatData = GameCheatData(EXPORT_FILENAME) #TODO GameCheatData() should get the ref to the DAT file at its init
+gameCheatData = GameCheatData(EXPORT_FILENAME, IMPORT_FILENAME) #TODO GameCheatData() should get the ref to the DAT file at its init
 #imports all data as [GameCheatData] 
-gameCheatData.parse_model_data(driver.DATA_FILE) #   driver.DATA_FILE "org_gba_import.dat" "gba_import.dat"
+gameCheatData.parse_model_data()
 
 
 #Init User-Interface/GUI -- TODO Vereinfachen mit nur einer abstrakten Klasse
-gui = abstract_userinterface.ConcreteUserInterface(view_commandline.CommandLineInterface())
+gui = view_commandline.CommandLineInterface()
 
 while(True):
     userAction = gui.get_user_action()

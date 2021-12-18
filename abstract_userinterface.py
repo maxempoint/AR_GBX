@@ -59,10 +59,10 @@ class GameCheat:
         return self.cheatCodeAddresses
 
 class GameCheatData:
-    def __init__(self, export_filename):
+    def __init__(self, export_filename="new_mod_data.dat", import_filename="imported_data.dat"):
         self.gameCheats = []
-        self.SOURCE_FILENAME = "imported_data.dat"
-        self.EXPORT_FILENAME = "new_mod_data.dat"
+        self.SOURCE_FILENAME = import_filename
+        self.EXPORT_FILENAME = export_filename
 
         self.games_and_cheatcodes = {}
     
@@ -126,9 +126,9 @@ class GameCheatData:
 
     #[GameName]
     #TODO ViewReturnValues umbennen und hier integrieren
-    def parse_model_data(self,data_file):
+    def parse_model_data(self):
         try:
-            file_handler = open(data_file,'rb')
+            file_handler = open(self.SOURCE_FILENAME,'rb')
         except Exception as e:
             print(e)
             return ParsingReturnValues.FILENAME_ERROR
@@ -207,24 +207,4 @@ class UserInterface(ABC):
     @abstractmethod
     def print_error(self, text):
         pass
-    
-
-
-class ConcreteUserInterface(UserInterface):
-    
-    def __init__(self, view):
-        self.view = view
-
-    def get_user_action(self) -> UserAction:
-        return self.view.get_user_action()
-
-    def update_view(self, data, mode: ViewModes):
-        return self.view.update_view(data, mode)
-
-    
-    def ask_input(self,text):
-        return self.view.ask_input(text)
-    
-    def print_error(self, text):
-        self.view.print_error(text)
     

@@ -150,7 +150,7 @@ class PythonDriver(AbstractDriverAR):
         #save cheat code data to a file
         self.__write_data_to_file(data)
     
-    #TODO: check protocol again + TODO check original script + TODO set up a proper test case!!
+    
     def write_data_to_device(self, num_of_games):
         usb.util.dispose_resources(self.dev)
         file_handler = open(self.SOURCE_FILENAME,'rb')
