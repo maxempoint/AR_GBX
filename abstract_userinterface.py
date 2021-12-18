@@ -110,19 +110,6 @@ class GameCheatData:
 
         return addresses_array
 
-    def __org_transform_address_bytes_to_string(self,raw_address_bytes):
-        PART_LEN = 4
-        num_addresses = int( len(raw_address_bytes) / PART_LEN )
-        addresses_array = []
-        for i in range(num_addresses):
-            address_as_string = ''
-            raw_address_bytes_part = raw_address_bytes[PART_LEN*i:PART_LEN*(i+1)]
-            for byte in raw_address_bytes_part[::-1]:
-                char = hex(byte)[2:]
-                address_as_string += char
-            addresses_array.append(address_as_string)
-        return addresses_array
-
 
     #[GameName]
     #TODO ViewReturnValues umbennen und hier integrieren
