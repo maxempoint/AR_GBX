@@ -16,6 +16,7 @@ class UserAction(Enum):
 class ViewModes(Enum):
     PRINT_ALL = 0
     PRINT_GAME = 1
+    ERROR_MSG = 2
 
 #TODO diese values integrieren (-> in GameCheatData.parse_model_data)
 class ParsingReturnValues(Enum):
@@ -42,21 +43,36 @@ class AbstractDriverAR(ABC):
 
 ############--View--############
 
+class UserInput():
+    def __init__(self, useraction: UserAction, data: list[str]):
+        self.useraction_with_data = [UserAction.MODIFY_DATA,
+                                    UserAction.DELETE_SINGLE_GAME,
+                                    UserAction.MOD_ADDRESS]
+        self.useraction = useraction
+        self.data = data
+    
+    def is_user_input_needed(self):
+        return self.useraction in self.useraction_with_data
+    
+    def set_data(self, data: list[str]):
+        self.data += data
+    
+    def get_data(self):
+        return self.data
+    
+    def get_action(self):
+        return self.useraction
+    
+    def get_action_and_data(self):
+        return (self.get_action(), self.get_data())
+
+
 class UserInterface(ABC):
     
     @abstractmethod
-    def get_user_action(self) -> UserAction:
+    def get_user_action(self) -> UserInput:
         pass
     
     @abstractmethod
     def update_view(self, data, mode):
         pass
-    
-    @abstractmethod
-    def ask_input(self,text):
-        pass
-    
-    @abstractmethod
-    def print_error(self, text):
-        pass
-    

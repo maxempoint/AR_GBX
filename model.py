@@ -1,3 +1,5 @@
+from abstract_classes import *
+
 
 class GameCheat:
     #TODO ID for easier reference
