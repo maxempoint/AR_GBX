@@ -1,4 +1,5 @@
-from abstract_userinterface import AbstractDriverAR, GameCheatData
+from abstract_classes import AbstractDriverAR
+from model import GameCheatData
 
 import usb.core
 import usb.util

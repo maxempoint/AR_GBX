@@ -4,7 +4,8 @@ from io import StringIO
 
 sys.path.append('../')
 import view_commandline
-from abstract_userinterface import GameCheatData, ViewModes, UserAction
+from abstract_classes import ViewModes, UserAction
+from model import GameCheatData
 
 class TestGUI(unittest.TestCase):
 

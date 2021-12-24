@@ -1,4 +1,5 @@
-from abstract_userinterface import UserInterface, UserAction, ParsingReturnValues, GameCheatData, GameCheat, ViewModes
+from abstract_classes import UserInterface, UserAction, ParsingReturnValues, ViewModes
+from model import GameCheatData, GameCheat
 
 class CommandLineInterface(UserInterface):
 

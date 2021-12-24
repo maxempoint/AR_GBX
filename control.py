@@ -3,11 +3,11 @@
 # classes   : ThisIsAClass
 
 import view_commandline
-import abstract_userinterface
-from abstract_userinterface import UserAction
-from abstract_userinterface import ParsingReturnValues
-from abstract_userinterface import GameCheatData
-from abstract_userinterface import ViewModes
+import abstract_classes
+from abstract_classes import UserAction
+from abstract_classes import ParsingReturnValues
+from model import GameCheatData
+from abstract_classes import ViewModes
 import driverAR
 
 
@@ -39,8 +39,8 @@ def handle_mod_data(game, gui, driver):
         else:
             gui.print_error("Action is not possible")
 
-EXPORT_FILENAME = "new_mod_data.dat"
-IMPORT_FILENAME = "imported_data.dat"
+EXPORT_FILENAME = "new_mod_data.dat"  
+IMPORT_FILENAME = "imported_data.dat"  
 #Init driver
 use_mock_data = True
 if use_mock_data:
