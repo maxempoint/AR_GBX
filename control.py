@@ -7,17 +7,13 @@ import abstract_classes
 from abstract_classes import UserAction
 from abstract_classes import ParsingReturnValues
 from model import GameCheatData
-from abstract_classes import ViewModes
+from abstract_classes import CtrlMsg
 import driverAR
 import queue
 import threading
 
-#TODO refactor -> no global variables
-stop_threads = False
 
-def init_driver():
-    EXPORT_FILENAME = "new_mod_data.dat"  
-    IMPORT_FILENAME = "imported_data.dat"  
+def init_driver(EXPORT_FILENAME, IMPORT_FILENAME): 
     #Init driver
     use_mock_data = True
     if use_mock_data:
@@ -29,16 +25,14 @@ def init_driver():
         #TODO interprocess communication (e.g. queue) instead of these files
     return driver
 
-def init_model():
+def init_model(EXPORT_FILENAME, IMPORT_FILENAME):
     gameCheatData = GameCheatData(EXPORT_FILENAME, IMPORT_FILENAME) #TODO GameCheatData() should get the ref to the DAT file at its init
     #imports all data as [GameCheatData] 
     gameCheatData.parse_model_data()
     return gameCheatData
 
 def init_gui_and_queues():
-    #TODO refactor -> no global variables
-    global stop_threads
-    stop_threads = False
+
     #MAXSIZE == -1 means no limit for the queue
     MAXSIZE = -1
     #Producer Consumer for gui and control
@@ -47,22 +41,24 @@ def init_gui_and_queues():
     #Init User-Interface/GUI
     gui_class = view_commandline.CommandLineInterface(queue_useraction,queue_updateview)
 
-    gui = threading.Thread(target=gui_class.interact, args=(lambda : stop_threads, ))
+    gui = threading.Thread(target=gui_class.interact)
     gui.start()
 
     return gui_class, gui, queue_useraction, queue_updateview
 
 
-
 def main():
-    
-    driver = init_driver()
+    EXPORT_FILENAME = "new_mod_data.dat"  
+    IMPORT_FILENAME = "imported_data.dat" 
 
-    gameCheatData = init_model()
+    driver = init_driver(EXPORT_FILENAME, IMPORT_FILENAME)
+
+    gameCheatData = init_model(EXPORT_FILENAME, IMPORT_FILENAME)
 
     guit_class, gui_thread, queue_useraction, queue_updateview = init_gui_and_queues()
     
     while(True):
+        queue_updateview.put((gameCheatData, CtrlMsg.READY_FOR_INPUT))
         userInput = queue_useraction.get()
         userAction, additional_data = userInput.get_action_and_data()
 
@@ -73,7 +69,7 @@ def main():
             gameCheatData.parse_model_data(driver.DATA_FILE)
             
         elif userAction == UserAction.MODIFY_DATA:
-            queue_updateview.put((gameCheatData, ViewModes.PRINT_ALL))
+            queue_updateview.put((gameCheatData, CtrlMsg.PRINT_ALL))
             #TODO 
             pass
         elif userAction == UserAction.EXPORT_ALL_DATA:
@@ -82,6 +78,8 @@ def main():
 
         #TODO DELETE_SINGLE_GAME
         elif userAction == UserAction.END_PROGRAM:
+            queue_updateview.put((gameCheatData, CtrlMsg.END_GUI))
+            gui_thread.join()
             break
         else:
             print("Action is not possible")
@@ -89,10 +87,7 @@ def main():
 
     driver.exit_driver()
 
-    #TODO refactor -> no global variables
-    global stop_threads
-    stop_threads = True
-    gui_thread.join()
+    
 
 if __name__ == "__main__":
     main()

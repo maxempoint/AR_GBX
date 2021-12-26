@@ -13,10 +13,12 @@ class UserAction(Enum):
     ADD_NEW_CHEAT = 6
     MOD_ADDRESS = 7
 
-class ViewModes(Enum):
+class CtrlMsg(Enum):
     PRINT_ALL = 0
     PRINT_GAME = 1
     ERROR_MSG = 2
+    END_GUI = 3
+    READY_FOR_INPUT = 4
 
 #TODO diese values integrieren (-> in GameCheatData.parse_model_data)
 class ParsingReturnValues(Enum):

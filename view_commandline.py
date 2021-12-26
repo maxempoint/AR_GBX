@@ -1,6 +1,8 @@
-from abstract_classes import UserInterface, UserInput, UserAction, ParsingReturnValues, ViewModes
+from abstract_classes import UserInterface, UserInput, UserAction, ParsingReturnValues, CtrlMsg
 from model import GameCheatData, GameCheat
 import queue
+import logging
+import time
 
 class CommandLineInterface(UserInterface):
 
@@ -13,19 +15,24 @@ class CommandLineInterface(UserInterface):
         self.queue_useraction = queue_useraction
         self.queue_updateview = queue_updateview
 
-    def interact(self, stop):
+    def interact(self):
         while True:
-            if stop():
-                break
-            else:
-                if not self.queue_updateview.empty():
-                    self.update_view( self.queue_updateview.get() )
-                self.queue_useraction.put( self.get_user_action() )
+            #time.sleep(1)
+            if not self.queue_updateview.empty():
+                gameCheatData, mode = self.queue_updateview.get()
+                if mode == CtrlMsg.END_GUI:
+                    exit(0)
+                elif mode == CtrlMsg.READY_FOR_INPUT:
+                    self.queue_useraction.put( self.get_user_action() )
+                else:
+                    self.update_view(gameCheatData, mode)
+
+            
             
     def get_user_action(self) -> UserInput:
-        print("What do you want?")
-        print("type 'h' for help")
+        print("Input an action\nType \'h\' for help")
         i = input()
+        #logging.info(i)
         if i == "h":
             print("A: Print all data from Replay")
             print("I: Import all data to an xpc file")
@@ -39,9 +46,13 @@ class CommandLineInterface(UserInterface):
                 action = self.actionDict[i]
                 userinput = UserInput(action,[])
                 if userinput.is_user_input_needed():
+                    print("Additional input is needed")
                     #TODO specific prompt for different Actions
                     #TODO Input Validation
-                    data = input("Please give additional data")
+                    #print("additional data")
+                    #data = input()
+                    #print(data)
+                    data = "test"
                     userinput.set_data([data])
                 return userinput
             except KeyError:
@@ -49,8 +60,8 @@ class CommandLineInterface(UserInterface):
                 return UserInput(UserAction.NO_ACTION,[])
     
     #TODO pretty print <- depends on Data format 
-    def update_view(self, data: GameCheatData, mode):
-        if mode == ViewModes.PRINT_ALL:
+    def update_view(self, data: GameCheatData, mode: CtrlMsg):
+        if mode == CtrlMsg.PRINT_ALL:
             for game in data.gameCheats:
                 print("--------------- All names ---------------")
                 print(game.get_gameName())
@@ -58,19 +69,10 @@ class CommandLineInterface(UserInterface):
                 print("--------------- Cheat Codes ---------------")
                 #print(game.get_cheatCodeName())
                 print(game.get_cheatCodeAddresses())
-        elif mode == ViewModes.PRINT_GAME:
+        elif mode == CtrlMsg.PRINT_GAME:
             try:
                 print(data.gameCheats[0].get_gameName())
             except Exception as e:
-                self.print_error("Exception: " + e)
+                print("Exception: " + e)
         else:
-            self.print_error("This should never be reached")
-    
-    def ask_input(self, text):
-        print(text)
-        i = input()
-        return i
-    
-    
-    def print_error(self,text):
-        print("[!] " + text)
+            print("This should never be reached")
