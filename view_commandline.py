@@ -17,17 +17,20 @@ class CommandLineInterface(UserInterface):
 
     def interact(self):
         while True:
-            #time.sleep(1)
             if not self.queue_updateview.empty():
                 gameCheatData, mode = self.queue_updateview.get()
                 if mode == CtrlMsg.END_GUI:
                     exit(0)
                 elif mode == CtrlMsg.READY_FOR_INPUT:
                     self.queue_useraction.put( self.get_user_action() )
+                elif mode == CtrlMsg.READY_FOR_ADDITIONAL_DATA:
+                    self.queue_useraction.put( self.get_additional_data() )
                 else:
                     self.update_view(gameCheatData, mode)
 
-            
+    def get_additional_data(self):
+        i = input()
+        return i
             
     def get_user_action(self) -> UserInput:
         print("Input an action\nType \'h\' for help")
@@ -45,15 +48,6 @@ class CommandLineInterface(UserInterface):
             try:
                 action = self.actionDict[i]
                 userinput = UserInput(action,[])
-                if userinput.is_user_input_needed():
-                    print("Additional input is needed")
-                    #TODO specific prompt for different Actions
-                    #TODO Input Validation
-                    #print("additional data")
-                    #data = input()
-                    #print(data)
-                    data = "test"
-                    userinput.set_data([data])
                 return userinput
             except KeyError:
                 print("No such action")

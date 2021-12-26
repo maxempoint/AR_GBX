@@ -19,6 +19,7 @@ class CtrlMsg(Enum):
     ERROR_MSG = 2
     END_GUI = 3
     READY_FOR_INPUT = 4
+    READY_FOR_ADDITIONAL_DATA = 4
 
 #TODO diese values integrieren (-> in GameCheatData.parse_model_data)
 class ParsingReturnValues(Enum):

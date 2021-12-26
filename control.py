@@ -62,6 +62,11 @@ def main():
         userInput = queue_useraction.get()
         userAction, additional_data = userInput.get_action_and_data()
 
+        if userinput.is_user_input_needed():
+            queue_updateview.put((gameCheatData, CtrlMsg.READY_FOR_ADDITIONAL_DATA))
+            additional_action, additional_data = queue_useraction.get()
+            userInput.set_data([additional_data])
+
         if userAction == UserAction.NO_ACTION:
             continue
         elif userAction == UserAction.SHOW_ALL_DATA_FROM_AR:

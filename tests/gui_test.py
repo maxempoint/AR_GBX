@@ -23,19 +23,26 @@ class TestGUI(unittest.TestCase):
 
     #For simulation std input() see: https://napsterinblue.github.io/notes/python/development/sim_stdin/
     def test01_get_user_action(self):
-        for action in self.gui_class.actionDict:
-            if UserInput(action,[]).is_user_input_needed():
-                string = action + "\nAdditionalData"
+        for test_action in self.gui_class.actionDict:
+            is_user_input_needed = UserInput(self.gui_class.actionDict[test_action],[]).is_user_input_needed()
+            if is_user_input_needed:
+               # print("Additional data needed")
+                string = test_action + "\nAdditionalData"
             else:
-                string = action
+                string = test_action
             with StringIO(string) as f:
                 stdin = sys.stdin
                 sys.stdin = f
                 self.queue_updateview.put((self.mock_gameCheatData, CtrlMsg.READY_FOR_INPUT))
                 userInput = self.queue_useraction.get()
+                if is_user_input_needed:
+                    self.queue_updateview.put((self.mock_gameCheatData, CtrlMsg.READY_FOR_ADDITIONAL_DATA))
+                    additional_input = self.queue_useraction.get()
+                    userInput.set_data([additional_input.get_data()])
+                    print(userInput.get_data())
                 sys.stdin = stdin
-                action, data = userInput.get_action_and_data()
-                print(action)
+                actual_action, data = userInput.get_action_and_data()
+                self.assertEqual(actual_action, self.gui_class.actionDict[test_action])
                 
             
     
