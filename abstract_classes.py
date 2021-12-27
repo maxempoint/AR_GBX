@@ -18,8 +18,6 @@ class CtrlMsg(Enum):
     PRINT_GAME = 1
     ERROR_MSG = 2
     END_GUI = 3
-    READY_FOR_INPUT = 4
-    READY_FOR_ADDITIONAL_DATA = 4
 
 #TODO diese values integrieren (-> in GameCheatData.parse_model_data)
 class ParsingReturnValues(Enum):
@@ -71,11 +69,15 @@ class UserInput():
 
 
 class UserInterface(ABC):
-    
+
     @abstractmethod
-    def get_user_action(self) -> UserInput:
+    def interact(self):
         pass
     
     @abstractmethod
-    def update_view(self, data, mode):
+    def get_user_action(self):
+        pass
+    
+    @abstractmethod
+    def handle_ctrl_msg(self, data, mode: CtrlMsg):
         pass

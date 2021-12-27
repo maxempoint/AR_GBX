@@ -1,5 +1,5 @@
 from abstract_classes import *
-
+import driverAR
 
 class GameCheat:
     #TODO ID for easier reference
@@ -42,7 +42,24 @@ class GameCheatData:
         self.EXPORT_FILENAME = export_filename
 
         self.games_and_cheatcodes = {}
-    
+
+        self.driver = driverAR.PythonDriver(export_filename, mock=True)
+
+    def tear_down(self):
+        self.driver.exit_driver()
+
+    def init_driver(EXPORT_FILENAME, IMPORT_FILENAME): 
+        #Init driver
+        use_mock_data = True
+        if use_mock_data:
+            driver = driverAR.PythonDriver(EXPORT_FILENAME, mock=use_mock_data)
+        else:
+            driver = driverAR.PythonDriver(EXPORT_FILENAME, mock=use_mock_data)
+            driver.read_data() #TODO parametrize driver.DATA_FILE
+            #TODO find out why driver.read_data() interferes with the write-operation...
+            #TODO interprocess communication (e.g. queue) instead of these files
+        return driver
+
     def get_num_of_games(self):
         return len(self.gameCheats)
 

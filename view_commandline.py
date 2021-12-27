@@ -6,33 +6,24 @@ import time
 
 class CommandLineInterface(UserInterface):
 
-    def __init__(self, queue_useraction, queue_updateview):
+    def __init__(self, callback, ctrl_msg_queue):
         self.actionDict = { "A": UserAction.SHOW_ALL_DATA_FROM_AR, 
                             "M": UserAction.MODIFY_DATA,
                             "E": UserAction.EXPORT_ALL_DATA,
                             "D": UserAction.DELETE_SINGLE_GAME,
                             "q": UserAction.END_PROGRAM}
-        self.queue_useraction = queue_useraction
-        self.queue_updateview = queue_updateview
+        self.ctrl_msg_queue = ctrl_msg_queue
+        self.callback = callback
 
     def interact(self):
         while True:
-            if not self.queue_updateview.empty():
-                gameCheatData, mode = self.queue_updateview.get()
-                if mode == CtrlMsg.END_GUI:
-                    exit(0)
-                elif mode == CtrlMsg.READY_FOR_INPUT:
-                    self.queue_useraction.put( self.get_user_action() )
-                elif mode == CtrlMsg.READY_FOR_ADDITIONAL_DATA:
-                    self.queue_useraction.put( self.get_additional_data() )
-                else:
-                    self.update_view(gameCheatData, mode)
-
-    def get_additional_data(self):
-        i = input()
-        return i
+            if not self.ctrl_msg_queue.empty():
+                (data, mode) = self.ctrl_msg_queue.get()
+                self.handle_ctrl_msg(data, mode)
+            else:
+                self.get_user_action()
             
-    def get_user_action(self) -> UserInput:
+    def get_user_action(self):
         print("Input an action\nType \'h\' for help")
         i = input()
         #logging.info(i)
@@ -43,19 +34,21 @@ class CommandLineInterface(UserInterface):
             print("D: Delete a Game and its Cheatcodes")
             print("M: Modify a Cheatcode entry")
             print("q: end program")
-            return UserInput(UserAction.NO_ACTION,[])
+            self.callback( UserInput(UserAction.NO_ACTION,[]) )
         else:
             try:
                 action = self.actionDict[i]
                 userinput = UserInput(action,[])
-                return userinput
+                self.callback( userinput )
             except KeyError:
                 print("No such action")
-                return UserInput(UserAction.NO_ACTION,[])
+                self.callback( UserInput(UserAction.NO_ACTION,[]) )
     
     #TODO pretty print <- depends on Data format 
-    def update_view(self, data: GameCheatData, mode: CtrlMsg):
-        if mode == CtrlMsg.PRINT_ALL:
+    def handle_ctrl_msg(self, data, mode):
+        if mode == CtrlMsg.END_GUI:
+            exit(0)
+        elif mode == CtrlMsg.PRINT_ALL:
             for game in data.gameCheats:
                 print("--------------- All names ---------------")
                 print(game.get_gameName())
@@ -68,5 +61,9 @@ class CommandLineInterface(UserInterface):
                 print(data.gameCheats[0].get_gameName())
             except Exception as e:
                 print("Exception: " + e)
+        elif mode == CtrlMsg.ERROR_MSG:
+            #TODO
+            pass
         else:
-            print("This should never be reached")
+            raise ValueError
+            print("No Such CtrlMsg")
