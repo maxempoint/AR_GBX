@@ -1,12 +1,14 @@
-from abstract_classes import UserInterface, UserInput, UserAction, ParsingReturnValues, CtrlMsg
+from abstract_classes import UserInterface, UserInput, UserAction, ParsingReturnValues, CtrlMsg, ViewTypes
 from model import GameCheatData, GameCheat
 import queue
 import logging
 import time
 
+
 class CommandLineInterface(UserInterface):
 
     def __init__(self, callback, ctrl_msg_queue):
+        self.type = ViewTypes.COMMAND_LINE
         self.actionDict = { "A": UserAction.SHOW_ALL_DATA_FROM_AR, 
                             "M": UserAction.MODIFY_DATA,
                             "E": UserAction.EXPORT_ALL_DATA,

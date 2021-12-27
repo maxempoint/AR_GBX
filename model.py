@@ -43,14 +43,13 @@ class GameCheatData:
 
         self.games_and_cheatcodes = {}
 
-        self.driver = driverAR.PythonDriver(export_filename, mock=True)
+        self.driver = self.init_driver(export_filename, import_filename, use_mock_data=True)
 
     def tear_down(self):
         self.driver.exit_driver()
 
-    def init_driver(EXPORT_FILENAME, IMPORT_FILENAME): 
+    def init_driver(self, EXPORT_FILENAME, IMPORT_FILENAME, use_mock_data=True): 
         #Init driver
-        use_mock_data = True
         if use_mock_data:
             driver = driverAR.PythonDriver(EXPORT_FILENAME, mock=use_mock_data)
         else:

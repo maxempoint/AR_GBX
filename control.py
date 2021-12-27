@@ -29,21 +29,20 @@ class Control:
         if userAction == UserAction.NO_ACTION:
             pass
         elif userAction == UserAction.SHOW_ALL_DATA_FROM_AR:
+            #TODO request data from model
             pass
         elif userAction == UserAction.MODIFY_DATA:
-            #TODO 
+            #TODO check if additional data is correct
+            #TODO set values in model
             pass
         elif userAction == UserAction.EXPORT_ALL_DATA:
-            #TODO
+            #TODO call model
+            #       to call driver
+            #           to write data of model to device
             pass
         #TODO DELETE_SINGLE_GAME
         elif userAction == UserAction.END_PROGRAM:
             self.ctrl_msg_queue.put((self.model, CtrlMsg.END_GUI))
-            try:
-                self.gui_thread.join()
-            except RuntimeError:
-                print("RuntimeError")
-                pass
             self.model.tear_down()
             exit(0)
         else:

@@ -25,6 +25,10 @@ class ParsingReturnValues(Enum):
     MODEL_DATA_CORRECT = 1
     FILENAME_ERROR = 2
 
+class ViewTypes(Enum):
+    COMMAND_LINE = 0
+    TKINTER_GUI = 1
+
 class AbstractDriverAR(ABC):
     
     @abstractmethod
