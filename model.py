@@ -1,6 +1,63 @@
 from abstract_classes import *
 import driverAR
 
+class Model:
+    def __init__(self, export_filename, import_filename):
+        self.SOURCE_FILENAME = import_filename
+        self.EXPORT_FILENAME = export_filename
+
+        #Note: driver has to be initalized before gameCheatData parses the data
+        self.driver = self.__init_driver(export_filename, import_filename, use_mock_data=True)
+
+        self.gameCheatData = GameCheatData()
+        self.gameCheatData.parse_model_data()
+    
+    def get_gamecheatdata(self):
+        return self.gameCheatData
+    
+    #write data in bytes format to file
+    def write_data_to_file(self):
+        file_handler = open(self.EXPORT_FILENAME, "wb")
+        for cheatcode in self.gameCheatData.gameCheats:
+            file_handler.write( pack("<i", len(cheatcode.get_cheatCodeNames()) ) )
+            file_handler.write( bytes(cheatcode.get_gameName().decode(),'utf-8') )
+            for c in cheatcode.get_cheatCodeAddresses():
+                #print(c)
+                arr_of_addr = cheatcode.get_cheatCodeAddresses()[c]
+                file_handler.write( pack("<i", len(arr_of_addr)) )
+                file_handler.write( bytes(c.decode(),'utf-8') )
+               
+                for addr in arr_of_addr:
+                    addr_as_bytes = pack(">I", int(addr[2:],16) )
+                    #print(addr_as_bytes)
+                    file_handler.write( addr_as_bytes )
+
+        file_handler.close()
+    
+    def write_data_to_device(self):
+        self.write_data_to_file()
+        self.driver.write_data_to_device(self.gameCheatData.get_num_of_games())
+
+    def read_data_from_device(self):
+        self.driver.read_data()
+        self.gameCheatData.delete_current_gamecheats()
+        self.gameCheatData.parse_model_data()
+
+    def __init_driver(self, EXPORT_FILENAME, IMPORT_FILENAME, use_mock_data=True):
+        if use_mock_data:
+            driver = driverAR.PythonDriver(EXPORT_FILENAME, mock=use_mock_data)
+        else:
+            driver = driverAR.PythonDriver(EXPORT_FILENAME, mock=use_mock_data)
+            driver.read_data() #TODO parametrize driver.DATA_FILE
+            #TODO find out why driver.read_data() interferes with the write-operation...
+            #TODO interprocess communication (e.g. queue) instead of these files
+        return driver
+
+    def tear_down(self):
+        self.gameCheatData.delete_current_gamecheats()
+        self.driver.exit_driver()
+
+
 class GameCheat:
     #TODO ID for easier reference
     def __init__(self):
@@ -42,44 +99,13 @@ class GameCheatData:
         self.EXPORT_FILENAME = export_filename
 
         self.games_and_cheatcodes = {}
-
-        self.driver = self.init_driver(export_filename, import_filename, use_mock_data=True)
-
-    def tear_down(self):
-        self.driver.exit_driver()
-
-    def init_driver(self, EXPORT_FILENAME, IMPORT_FILENAME, use_mock_data=True): 
-        #Init driver
-        if use_mock_data:
-            driver = driverAR.PythonDriver(EXPORT_FILENAME, mock=use_mock_data)
-        else:
-            driver = driverAR.PythonDriver(EXPORT_FILENAME, mock=use_mock_data)
-            driver.read_data() #TODO parametrize driver.DATA_FILE
-            #TODO find out why driver.read_data() interferes with the write-operation...
-            #TODO interprocess communication (e.g. queue) instead of these files
-        return driver
+    
+    def delete_current_gamecheats(self):
+        self.gameCheats = []
+        self.games_and_cheatcodes = {}
 
     def get_num_of_games(self):
         return len(self.gameCheats)
-
-    #write data in bytes format to file
-    def write_data_to_file(self):
-        file_handler = open(self.EXPORT_FILENAME, "wb")
-        for cheatcode in self.gameCheats:
-            file_handler.write( pack("<i", len(cheatcode.get_cheatCodeNames()) ) )
-            file_handler.write( bytes(cheatcode.get_gameName().decode(),'utf-8') )
-            for c in cheatcode.get_cheatCodeAddresses():
-                #print(c)
-                arr_of_addr = cheatcode.get_cheatCodeAddresses()[c]
-                file_handler.write( pack("<i", len(arr_of_addr)) )
-                file_handler.write( bytes(c.decode(),'utf-8') )
-               
-                for addr in arr_of_addr:
-                    addr_as_bytes = pack(">I", int(addr[2:],16) )
-                    #print(addr_as_bytes)
-                    file_handler.write( addr_as_bytes )
-
-        file_handler.close()
     
     def does_GameExist(self,gameName):
         ret = False

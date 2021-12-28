@@ -5,7 +5,7 @@
 import view_commandline
 from abstract_classes import UserAction
 from abstract_classes import ParsingReturnValues
-from model import GameCheatData
+from model import Model
 from abstract_classes import CtrlMsg, UserInput
 import threading
 import queue
@@ -20,7 +20,7 @@ class Control:
 
         EXPORT_FILENAME = "new_mod_data.dat"  
         IMPORT_FILENAME = "imported_data.dat" 
-        self.model = self.__init_model(EXPORT_FILENAME, IMPORT_FILENAME)
+        self.model = Model(EXPORT_FILENAME, IMPORT_FILENAME)
         
 
     def get_user_input(self, userInput: UserInput):
@@ -47,13 +47,6 @@ class Control:
             exit(0)
         else:
             print("Action is not possible")
-
-
-    def __init_model(self, EXPORT_FILENAME, IMPORT_FILENAME):
-        gameCheatData = GameCheatData(EXPORT_FILENAME, IMPORT_FILENAME) #TODO GameCheatData() should get the ref to the DAT file at its init
-        #imports all data as [GameCheatData] 
-        gameCheatData.parse_model_data()
-        return gameCheatData
 
 if __name__ == "__main__":
     control = Control()
