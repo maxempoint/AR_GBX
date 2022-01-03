@@ -2,12 +2,12 @@ from abstract_classes import *
 import driverAR
 
 class Model:
-    def __init__(self, export_filename, import_filename):
+    def __init__(self, export_filename, import_filename, mock):
         self.SOURCE_FILENAME = import_filename
         self.EXPORT_FILENAME = export_filename
 
         #Note: driver has to be initalized before gameCheatData parses the data
-        self.driver = self.__init_driver(export_filename, import_filename, use_mock_data=True)
+        self.driver = self.__init_driver(export_filename, import_filename, mock)
 
         self.gameCheatData = GameCheatData()
         self.gameCheatData.parse_model_data()

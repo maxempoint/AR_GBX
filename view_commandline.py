@@ -24,23 +24,29 @@ class CommandLineInterface(UserInterface):
                 self.handle_ctrl_msg(data, mode)
             else:
                 self.get_user_action()
+    
+    def parse_user_input(self, user_input):
+        if len(user_input) == 1:
+            return (user_input, '')
+        return (user_input[0], user_input[1:])
             
     def get_user_action(self):
         print("Input an action\nType \'h\' for help")
         i = input()
+        action, data = self.parse_user_input(i)
         #logging.info(i)
-        if i == "h":
+        if action == "h":
             print("A: Print all data from Replay")
             print("I: Import all data to an xpc file")
             print("E: Export data from xpc file")
             print("D: Delete a Game and its Cheatcodes")
-            print("M: Modify a Cheatcode entry")
+            print("M: Modify a Cheatcode entry -> M N <Cheat Code Name> C <Cheatcode> No <number of address> D <data>")
             print("q: end program")
-            self.callback( UserInput(UserAction.NO_ACTION,[]) )
+            self.callback( UserInput(UserAction.NO_ACTION,[data]) )
         else:
             try:
-                action = self.actionDict[i]
-                userinput = UserInput(action,[])
+                action = self.actionDict[action]
+                userinput = UserInput(action,[data])
                 self.callback( userinput )
             except KeyError:
                 print("No such action")
