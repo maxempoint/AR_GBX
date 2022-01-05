@@ -3,6 +3,7 @@
 # classes   : ThisIsAClass
 
 import view_commandline
+import tk_gui
 from abstract_classes import UserAction
 from abstract_classes import ParsingReturnValues
 from model import Model
@@ -12,16 +13,24 @@ import queue
 import argparse
 
 class Control:
-    def __init__(self, mock: bool, import_file: str):
+    def __init__(self, mock: bool, import_file: str, view_opt: str):
         self.ctrl_msg_queue = queue.Queue(maxsize=-1)
-        self.view = view_commandline.CommandLineInterface(self.get_user_input, self.ctrl_msg_queue)
+        #self.view = view_commandline.CommandLineInterface(self.get_user_input, self.ctrl_msg_queue)
+        self.view = self.select_view(view_opt)
         self.gui_thread = threading.Thread(target=self.view.interact)
         self.gui_thread.start()
 
         EXPORT_FILENAME = "new_mod_data.dat"  
         IMPORT_FILENAME = import_file
         self.model = Model(EXPORT_FILENAME, IMPORT_FILENAME, mock)
-        
+    
+    def select_view(self, view_opt: str):
+        if "view_commandline" == view_opt:
+            return view_commandline.CommandLineInterface(self.get_user_input, self.ctrl_msg_queue)
+        elif "tk_gui" == view_opt:
+            return tk_gui.GUI(self.get_user_input, self.ctrl_msg_queue)
+        else:
+            raise ValueError
 
     def get_user_input(self, userInput: UserInput):
         userAction, additional_data = userInput.get_action_and_data()
@@ -53,6 +62,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--mock', type=bool, dest='mock', default=True, help="use real device or mock data")
     parser.add_argument('--if', type=str, dest='importfilename', default='imported_data.dat', help='File for saving device data')
-
+    parser.add_argument('--view', type=str, dest='viewopt',default='view_commandline', help="select view options")
     args = parser.parse_args()
-    control = Control(args.mock, args.importfilename)
+    control = Control(args.mock, args.importfilename, args.viewopt)

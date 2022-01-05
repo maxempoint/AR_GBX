@@ -65,10 +65,11 @@ class CommandLineInterface(UserInterface):
                 #print(game.get_cheatCodeName())
                 print(game.get_cheatCodeAddresses())
         elif mode == CtrlMsg.PRINT_GAME:
-            try:
-                print(data.gameCheats[0].get_gameName())
-            except Exception as e:
-                print("Exception: " + e)
+            for cheat in data.gameCheats:
+                try:
+                    print(cheat.get_gameName())
+                except Exception as e:
+                    print("Exception: " + e)
         elif mode == CtrlMsg.ERROR_MSG:
             #TODO
             pass
