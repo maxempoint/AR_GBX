@@ -14,15 +14,17 @@ import argparse
 
 class Control:
     def __init__(self, mock: bool, import_file: str, view_opt: str):
+        EXPORT_FILENAME = "new_mod_data.dat"  
+        IMPORT_FILENAME = import_file
+        self.model = Model(EXPORT_FILENAME, IMPORT_FILENAME, mock)
+
         self.ctrl_msg_queue = queue.Queue(maxsize=-1)
         #self.view = view_commandline.CommandLineInterface(self.get_user_input, self.ctrl_msg_queue)
         self.view = self.select_view(view_opt)
         self.gui_thread = threading.Thread(target=self.view.interact)
         self.gui_thread.start()
 
-        EXPORT_FILENAME = "new_mod_data.dat"  
-        IMPORT_FILENAME = import_file
-        self.model = Model(EXPORT_FILENAME, IMPORT_FILENAME, mock)
+       
     
     def select_view(self, view_opt: str):
         if "view_commandline" == view_opt:
@@ -42,6 +44,7 @@ class Control:
             gameCheatData = self.model.get_gamecheatdata()
             #send gamecheatdata to view
             self.ctrl_msg_queue.put((gameCheatData, CtrlMsg.PRINT_ALL))
+            return
         elif userAction == UserAction.MODIFY_DATA:
             #TODO check if additional data is correct
             print("control " + str(additional_data))
@@ -60,8 +63,11 @@ class Control:
 if __name__ == "__main__":
     #get commandline arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument('--mock', type=bool, dest='mock', default=True, help="use real device or mock data")
+    parser.add_argument('--mock', type=str, dest='mock', default="true", help="use real device or mock data")
     parser.add_argument('--if', type=str, dest='importfilename', default='imported_data.dat', help='File for saving device data')
     parser.add_argument('--view', type=str, dest='viewopt',default='view_commandline', help="select view options")
     args = parser.parse_args()
-    control = Control(args.mock, args.importfilename, args.viewopt)
+    if args.mock == "false":
+        control = Control(False, args.importfilename, args.viewopt)
+    else:
+        control = Control(True, args.importfilename, args.viewopt)
