@@ -2,8 +2,7 @@
 # vars      : thisIsAVar
 # classes   : ThisIsAClass
 
-import view_commandline
-import tk_gui
+
 from abstract_classes import UserAction
 from abstract_classes import ParsingReturnValues
 from model import Model
@@ -28,8 +27,10 @@ class Control:
     
     def select_view(self, view_opt: str):
         if "view_commandline" == view_opt:
+            import view_commandline
             return view_commandline.CommandLineInterface(self.get_user_input, self.ctrl_msg_queue)
         elif "tk_gui" == view_opt:
+            import tk_gui
             return tk_gui.GUI(self.get_user_input, self.ctrl_msg_queue)
         else:
             raise ValueError
