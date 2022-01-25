@@ -1,4 +1,4 @@
-from abstract_classes import UserInterface, UserInput, UserAction, ParsingReturnValues, CtrlMsg, ViewTypes
+from abstract_classes import UserInterface, UserInput, UserAction, ParsingReturnValues, UserAction, ViewTypes
 from model import GameCheatData, GameCheat
 import queue
 import logging
@@ -7,23 +7,21 @@ import time
 
 class CommandLineInterface(UserInterface):
 
-    def __init__(self, callback, ctrl_msg_queue):
+    def __init__(self, callback, model):
         self.type = ViewTypes.COMMAND_LINE
         self.actionDict = { "A": UserAction.SHOW_ALL_DATA_FROM_AR, 
                             "M": UserAction.MODIFY_DATA,
                             "E": UserAction.EXPORT_ALL_DATA,
                             "D": UserAction.DELETE_SINGLE_GAME,
                             "q": UserAction.END_PROGRAM}
-        self.ctrl_msg_queue = ctrl_msg_queue
         self.callback = callback
+        self.model = model
+        self.state = UserAction.NO_ACTION
 
     def interact(self):
         while True:
-            if not self.ctrl_msg_queue.empty():
-                (data, mode) = self.ctrl_msg_queue.get()
-                self.handle_ctrl_msg(data, mode)
-            else:
-                self.get_user_action()
+            self.get_user_action()
+            self.fetch_model_data()
     
     def parse_user_input(self, user_input):
         if len(user_input) == 1:
@@ -46,6 +44,7 @@ class CommandLineInterface(UserInterface):
         else:
             try:
                 action = self.actionDict[action]
+                self.state = action
                 userinput = UserInput(action,[data])
                 self.callback( userinput )
             except KeyError:
@@ -53,26 +52,30 @@ class CommandLineInterface(UserInterface):
                 self.callback( UserInput(UserAction.NO_ACTION,[]) )
     
     #TODO pretty print <- depends on Data format 
-    def handle_ctrl_msg(self, data, mode):
-        if mode == CtrlMsg.END_GUI:
+    def fetch_model_data(self):
+        mode = self.state
+        gameCheatData = self.model.get_gamecheatdata()
+        if mode == UserAction.END_PROGRAM:
             exit(0)
-        elif mode == CtrlMsg.PRINT_ALL:
-            for game in data.gameCheats:
+        elif mode == UserAction.SHOW_ALL_DATA_FROM_AR:
+            for game in gameCheatData.gameCheats:
                 print("--------------- All names ---------------")
                 print(game.get_gameName())
                 print("\n")
                 print("--------------- Cheat Codes ---------------")
                 #print(game.get_cheatCodeName())
                 print(game.get_cheatCodeAddresses())
-        elif mode == CtrlMsg.PRINT_GAME:
-            for cheat in data.gameCheats:
+        elif mode == UserAction.PRINT_GAME:
+            for cheat in gameCheatData.gameCheats:
                 try:
                     print(cheat.get_gameName())
                 except Exception as e:
                     print("Exception: " + e)
-        elif mode == CtrlMsg.ERROR_MSG:
+        elif mode == UserAction.ERROR_MSG:
             #TODO
             pass
+        elif mode == UserAction.NO_ACTION:
+            pass
         else:
-            raise ValueError
-            print("No Such CtrlMsg")
+            pass
+            

@@ -1,6 +1,6 @@
 import tkinter as tk
 
-from abstract_classes import UserInterface, UserInput, UserAction, ParsingReturnValues, CtrlMsg, ViewTypes
+from abstract_classes import UserInterface, UserInput, UserAction, ParsingReturnValues, ViewTypes
 from model import GameCheatData, GameCheat
 import queue
 #partial to invoke callback with arguments
@@ -17,7 +17,7 @@ class GUI(UserInterface):
         self.cheatcode_text = None
         self.addresses_text = None
 
-        self.ctrl_msg_queue = ctrl_msg_queue
+        self.state = UserAction.NO_ACTION
         self.callback = callback
     
     def create_info_text_field(self, height, width):
@@ -49,24 +49,19 @@ class GUI(UserInterface):
         show_all.pack(side=tk.LEFT)
         show_all.config(font=("Courier", 33))
 
-        self.root.after(0, self.get_ctrl_msg) #checks ctrl_msg_queue
         self.root.mainloop()
     
     
-    def get_ctrl_msg(self):
-        if not self.ctrl_msg_queue.empty():
-            (data, mode) = self.ctrl_msg_queue.get()
-            self.handle_ctrl_msg(data, mode)
-        self.root.after(10, self.get_ctrl_msg) #re-register callback
     
     def get_user_action(self):
         #TODO
         pass
     
-    def handle_ctrl_msg(self, data, mode: CtrlMsg):
-        if mode == CtrlMsg.END_GUI:
+    def fetch_model_data(self):
+        mode = self.state
+        if mode == UserAction.END_PROGRAM:
             self.root.quit()
-        elif mode == CtrlMsg.PRINT_ALL:
+        elif mode == UserAction.SHOW_ALL_DATA_FROM_AR:
             
             for game in data.gameCheats:
             
@@ -78,16 +73,18 @@ class GUI(UserInterface):
 
                 self.addresses_text.insert(tk.END, str(game.get_cheatCodeAddresses()) )
                 self.addresses_text.update()
-        elif mode == CtrlMsg.PRINT_GAME:
+        elif mode == UserAction.PRINT_GAME:
             for cheat in data.gameCheats:
                 try:
                     print(cheat.get_gameName())
                 except Exception as e:
                     print("Exception: " + e)
-        elif mode == CtrlMsg.ERROR_MSG:
+        elif mode == UserAction.ERROR_MSG:
             #TODO
+            pass
+        elif mode == UserAction.NO_ACTION:
             pass
         else:
             raise ValueError
-            print("No Such CtrlMsg")
+            print("No Such UserAction")
 

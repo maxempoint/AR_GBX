@@ -6,7 +6,7 @@
 from abstract_classes import UserAction
 from abstract_classes import ParsingReturnValues
 from model import Model
-from abstract_classes import CtrlMsg, UserInput
+from abstract_classes import UserInput
 import threading
 import queue
 import argparse
@@ -17,7 +17,6 @@ class Control:
         IMPORT_FILENAME = import_file
         self.model = Model(EXPORT_FILENAME, IMPORT_FILENAME, mock)
 
-        self.ctrl_msg_queue = queue.Queue(maxsize=-1)
         #self.view = view_commandline.CommandLineInterface(self.get_user_input, self.ctrl_msg_queue)
         self.view = self.select_view(view_opt)
         self.gui_thread = threading.Thread(target=self.view.interact)
@@ -28,10 +27,10 @@ class Control:
     def select_view(self, view_opt: str):
         if "view_commandline" == view_opt:
             import view_commandline
-            return view_commandline.CommandLineInterface(self.get_user_input, self.ctrl_msg_queue)
+            return view_commandline.CommandLineInterface(self.get_user_input, self.model)
         elif "tk_gui" == view_opt:
             import tk_gui
-            return tk_gui.GUI(self.get_user_input, self.ctrl_msg_queue)
+            return tk_gui.GUI(self.get_user_input, self.model)
         else:
             raise ValueError
 
@@ -39,12 +38,6 @@ class Control:
         userAction, additional_data = userInput.get_action_and_data()
 
         if userAction == UserAction.NO_ACTION:
-            pass
-        elif userAction == UserAction.SHOW_ALL_DATA_FROM_AR:
-            #request data from model
-            gameCheatData = self.model.get_gamecheatdata()
-            #send gamecheatdata to view
-            self.ctrl_msg_queue.put((gameCheatData, CtrlMsg.PRINT_ALL))
             return
         elif userAction == UserAction.MODIFY_DATA:
             #TODO check if additional data is correct
@@ -55,7 +48,6 @@ class Control:
             self.model.write_data_to_device()
         #TODO DELETE_SINGLE_GAME
         elif userAction == UserAction.END_PROGRAM:
-            self.ctrl_msg_queue.put((self.model, CtrlMsg.END_GUI))
             self.model.tear_down()
             exit(0)
         else:

@@ -9,6 +9,9 @@ from abstract_classes import CtrlMsg, UserAction, UserInput, ViewTypes
 from model import GameCheatData
 import queue
 
+
+#TODO try humble object approach
+
 class TestGUI(unittest.TestCase):
 
     def setUp(self):
