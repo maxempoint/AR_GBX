@@ -12,13 +12,16 @@ class GUI(UserInterface):
         self.type = ViewTypes.TKINTER_GUI
 
         self.root = None
-        self.text_field = None
+        #TODO Define different Text Fields for different data (game name, cheatname, etc.)
+        self.names_text = None
+        self.cheatcode_text = None
+        self.addresses_text = None
 
         self.ctrl_msg_queue = ctrl_msg_queue
         self.callback = callback
     
-    def create_info_text_field(self):
-        T = tk.Text(self.root, height=9, width=30)
+    def create_info_text_field(self, height, width):
+        T = tk.Text(self.root, height=height, width=width)
         T.insert(tk.END,"")
         T.pack()
         return T
@@ -26,7 +29,9 @@ class GUI(UserInterface):
     def interact(self):
         self.root = tk.Tk()
 
-        self.text_field = self.create_info_text_field()
+        self.names_text = self.create_info_text_field(9,30)
+        self.cheatcode_text = self.create_info_text_field(9,30)
+        self.addresses_text = self.create_info_text_field(9,30)
 
         frame = tk.Frame(self.root)
         frame.pack()
@@ -62,11 +67,17 @@ class GUI(UserInterface):
         if mode == CtrlMsg.END_GUI:
             self.root.quit()
         elif mode == CtrlMsg.PRINT_ALL:
-            print("in handle ctrl!!")
+            
             for game in data.gameCheats:
-                text = "--------------- All names ---------------\n" + str(game.get_gameName()) + "\n" +   "--------------- Cheat Codes ---------------\n" + str(game.get_cheatCodeAddresses())
-                self.text_field.insert(tk.END,text)
-                self.text_field.update()
+            
+                self.names_text.insert(tk.END, str(game.get_gameName()) )
+                self.names_text.update()
+
+                self.cheatcode_text.insert(tk.END, str(game.get_cheatCodeNames()) )
+                self.cheatcode_text.update()
+
+                self.addresses_text.insert(tk.END, str(game.get_cheatCodeAddresses()) )
+                self.addresses_text.update()
         elif mode == CtrlMsg.PRINT_GAME:
             for cheat in data.gameCheats:
                 try:
