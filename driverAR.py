@@ -7,13 +7,15 @@ import time
 from struct import *
 
 class PythonDriver(AbstractDriverAR):
-    def __init__(self, export_filename, mock=False):
+    def __init__(self, export_filename, import_filename, mock=False):
+        print("Export in PythonDriver " + export_filename)
+        print("Import in PythonDriver " + import_filename)
         self.mock = mock
         if mock:
             self.DATA_FILE = "mock_data.dat"
             #TODO create driver self.dev stub 
         else:
-            self.DATA_FILE = "store_data.dat" #TODO parametrize on init
+            self.DATA_FILE = import_filename
             self.dev, self.cfg_desired = self.__init_driver()
 
 
@@ -89,6 +91,7 @@ class PythonDriver(AbstractDriverAR):
             self.dev.set_configuration(self.cfg_desired)
 
     def __write_data_to_file(self,data):
+        print("In driverAR. This is the filename which the device data is written to: " + self.DATA_FILE)
         f = open(self.DATA_FILE,'wb')
         new = []
         for elem in data:
@@ -148,28 +151,36 @@ class PythonDriver(AbstractDriverAR):
         self.write_and_read_request(self.END_WRITE_CODE)
         self.__get_and_set_usb_config()
         #save cheat code data to a file
+        #print("In driver. This is the read data from device: " + str(data))
         self.__write_data_to_file(data)
     
     
     def write_data_to_device(self, num_of_games):
         usb.util.dispose_resources(self.dev)
+        print("In driverAR.write_data_to_device. This file is read and its content written to the device "+ self.SOURCE_FILENAME)
         file_handler = open(self.SOURCE_FILENAME,'rb')
         data_to_send = file_handler.read()
         file_handler.close()
 
         NUM_OF_GAMES = pack("<B",num_of_games) #TODO parse number from SOURCE_FILENAME
-        print(NUM_OF_GAMES)
+        
         print("EXPORT CODES")
         print("-------------")
 
         #1
-        self.single_write_request(self.WRITE_CODE)
-        print(self.single_read_request())
+        # self.single_write_request(self.WRITE_CODE)
+        # print(self.single_read_request())
+        req, res = self.write_and_read_request(self.WRITE_CODE)
+        print("After WRITE_CODE is send: " + str(res))
+        if res != [0,0,0,0,0,0,0,0]:
+            req, res = self.write_and_read_request(self.WRITE_CODE)
+            print("After 2. WRITE_CODE is send: " + str(res))
 
         #2: send num of games
-        self.single_write_request(NUM_OF_GAMES + b'\x00\x00\x00\x00\x00\x00\x00')
-        result = self.single_read_request()
-        print(result)
+        # self.single_write_request(NUM_OF_GAMES + b'\x00\x00\x00\x00\x00\x00\x00')
+        # result = self.single_read_request()
+        req, res = self.write_and_read_request(NUM_OF_GAMES + b'\x00\x00\x00\x00\x00\x00\x00')
+        print("After num of games is send: " + str(res))
         if NUM_OF_GAMES[0] == 0:
             return
 

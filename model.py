@@ -5,11 +5,14 @@ class Model:
     def __init__(self, export_filename, import_filename, mock):
         self.SOURCE_FILENAME = import_filename
         self.EXPORT_FILENAME = export_filename
+        print("Export in Model " + self.EXPORT_FILENAME)
+        print("Import in Model " + self.SOURCE_FILENAME)
 
         #Note: driver has to be initalized before gameCheatData parses the data
-        self.driver = self.__init_driver(export_filename, import_filename, mock)
+        self.driver = self.__init_driver(export_filename, import_filename, use_mock_data=mock)
 
-        self.gameCheatData = GameCheatData()
+
+        self.gameCheatData = GameCheatData(export_filename=self.EXPORT_FILENAME, import_filename=self.SOURCE_FILENAME)
         self.gameCheatData.parse_model_data()
     
     def get_gamecheatdata(self):
@@ -17,12 +20,13 @@ class Model:
     
     #write data in bytes format to file
     def write_data_to_file(self):
+        print("In model.write_data_to_file. This is the filename the data is written to: " + self.EXPORT_FILENAME)
         file_handler = open(self.EXPORT_FILENAME, "wb")
         for cheatcode in self.gameCheatData.gameCheats:
             file_handler.write( pack("<i", len(cheatcode.get_cheatCodeNames()) ) )
             file_handler.write( bytes(cheatcode.get_gameName().decode(),'utf-8') )
             for c in cheatcode.get_cheatCodeAddresses():
-                #print(c)
+                #print("In model.write_data_to_file: " + str(c))
                 arr_of_addr = cheatcode.get_cheatCodeAddresses()[c]
                 file_handler.write( pack("<i", len(arr_of_addr)) )
                 file_handler.write( bytes(c.decode(),'utf-8') )
@@ -39,15 +43,16 @@ class Model:
         self.driver.write_data_to_device(self.gameCheatData.get_num_of_games())
 
     def read_data_from_device(self):
-        self.driver.read_data()
+        self.driver.read_data() #writes to file imported_data.dat
         self.gameCheatData.delete_current_gamecheats()
         self.gameCheatData.parse_model_data()
 
     def __init_driver(self, EXPORT_FILENAME, IMPORT_FILENAME, use_mock_data=True):
         if use_mock_data:
-            driver = driverAR.PythonDriver(EXPORT_FILENAME, mock=use_mock_data)
+            driver = driverAR.PythonDriver(EXPORT_FILENAME, mock=True)
         else:
-            driver = driverAR.PythonDriver(EXPORT_FILENAME, mock=use_mock_data)
+            print("Model: in init_driver")
+            driver = driverAR.PythonDriver(EXPORT_FILENAME, IMPORT_FILENAME, mock=False)
             driver.read_data() #TODO parametrize driver.DATA_FILE
             #TODO find out why driver.read_data() interferes with the write-operation...
             #TODO interprocess communication (e.g. queue) instead of these files
@@ -90,7 +95,11 @@ class GameCheat:
         return self.cheatCodesName
     
     def get_cheatCodeAddresses(self):
-        return self.cheatCodeAddresses
+        return self.cheatCodeAddresses#
+    
+    def delete_current_cheats(self):
+        self.cheatCodesName = []
+        self.cheatCodeAddresses = {}
 
 class GameCheatData:
     def __init__(self, export_filename="new_mod_data.dat", import_filename="imported_data.dat"):
@@ -114,11 +123,21 @@ class GameCheatData:
                 ret = True
         return ret
     
+    def stringify_data(self, data):
+        #remove bystring marks
+        if str(data)[0] == 'b':
+            stringified = str(data)[2:-1]
+        else:
+            stringified = str(data)
+        #remove unnecessary newlines
+        no_newlines = stringified.replace('\n', '')
+        no_parenth = no_newlines.replace('\'', '')
+        return no_parenth.strip() + "\n"
+        
     def get_Game(self,gameName):
         for g in self.gameCheats:
-            if g.get_gameName() == gameName:
+            if self.stringify_data(g.get_gameName())== self.stringify_data(gameName):
                 return g
-
 
     def transform_address_bytes_to_string(self, raw_address_bytes):
         addresses_array = []
@@ -128,7 +147,6 @@ class GameCheatData:
             addresses_array += a
 
         return addresses_array
-
 
     #[GameName]
     #TODO ViewReturnValues umbennen und hier integrieren
