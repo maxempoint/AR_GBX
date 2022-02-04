@@ -74,7 +74,13 @@ class GUI(UserInterface):
     def get_user_action(self, useraction : UserAction):
         self.state = useraction
         data = self.get_userdata_input()
-        self.callback( UserInput(useraction,data) )
+        try:
+            self.callback( UserInput(useraction,data) )
+        except Exception as e:
+            print(e)
+            self.state = UserAction.ERROR_MSG
+            self.fetch_model_data()
+            return
         self.fetch_model_data()
     
     def stringify_data(self, data):
@@ -133,7 +139,9 @@ class GUI(UserInterface):
                 except Exception as e:
                     print("Exception: " + e)
         elif mode == UserAction.ERROR_MSG:
-            #TODO
+            self.cheatcode_text.delete("1.0",tk.END)
+            self.cheatcode_text.update()
+            self.cheatcode_text.insert(tk.END, "You fucked up")
             pass
         elif mode == UserAction.NO_ACTION:
             pass

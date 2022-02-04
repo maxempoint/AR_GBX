@@ -13,6 +13,7 @@ import argparse
 
 class Control:
     def __init__(self, mock: bool, import_file: str, view_opt: str):
+        self.mock = mock
         EXPORT_FILENAME = "new_mod_data.dat"  
         IMPORT_FILENAME = import_file
         print("Export in Control " + EXPORT_FILENAME)
@@ -39,6 +40,40 @@ class Control:
     def parse_for_model(self, data):
         b_data = data.ljust(20).encode()
         return b_data
+    
+    def check_hex_data(self, data):
+        try:
+            int(data, 16)
+        except:
+            return False
+
+        if len(data) == 10:
+            return True
+        else:
+            return False      
+        
+        return check
+    
+    def check_data_from_UI(self, additional_data):
+        s = False
+        cheatName = ''
+        for elem in additional_data[1:]:
+            if elem == "|":
+                s = True
+                continue
+            if s:
+                if len(elem) > 20:
+                    raise ValueError
+                    return
+                b_cheatname = self.parse_for_model(elem)
+                cheatName = b_cheatname
+                s = False
+            else:                           
+                addresses = elem.split(', ')
+                for addr in addresses:
+                    if not self.check_hex_data(addr):
+                        raise ValueError
+                        return
 
     def get_user_input(self, userInput: UserInput):
         userAction, additional_data = userInput.get_action_and_data()
@@ -49,6 +84,8 @@ class Control:
             #TODO   is correct
             print("Ctrl: " + str(additional_data))
             g = self.model.get_gamecheatdata().get_Game(additional_data[0])
+
+            self.check_data_from_UI(additional_data)
           
             g.delete_current_cheats()
             s = False
@@ -63,12 +100,15 @@ class Control:
                     cheatName = b_cheatname 
                     s = False
                 else:
-                    addresses = elem.split(', ')
-                   # print(addresses)
+                    addresses = elem.split(', ')                           
                     g.set_cheatCodeAddresses(cheatName, addresses)
 
-            self.model.write_data_to_device()
-            self.model.driver.read_data()
+            if not self.mock:
+                self.model.write_data_to_device()
+                self.model.driver.read_data()
+            else:
+                self.model.write_data_to_file()
+
         elif userAction == UserAction.EXPORT_ALL_DATA:
             
             self.model.write_data_to_device()

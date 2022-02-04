@@ -49,7 +49,7 @@ class Model:
 
     def __init_driver(self, EXPORT_FILENAME, IMPORT_FILENAME, use_mock_data=True):
         if use_mock_data:
-            driver = driverAR.PythonDriver(EXPORT_FILENAME, mock=True)
+            driver = driverAR.PythonDriver(EXPORT_FILENAME, IMPORT_FILENAME, mock=True)
         else:
             print("Model: in init_driver")
             driver = driverAR.PythonDriver(EXPORT_FILENAME, IMPORT_FILENAME, mock=False)

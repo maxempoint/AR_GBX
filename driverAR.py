@@ -172,6 +172,7 @@ class PythonDriver(AbstractDriverAR):
         # print(self.single_read_request())
         req, res = self.write_and_read_request(self.WRITE_CODE)
         print("After WRITE_CODE is send: " + str(res))
+        #TODO find out why this is needed sometimes...
         if res != [0,0,0,0,0,0,0,0]:
             req, res = self.write_and_read_request(self.WRITE_CODE)
             print("After 2. WRITE_CODE is send: " + str(res))
