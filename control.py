@@ -25,8 +25,6 @@ class Control:
         self.gui_thread = threading.Thread(target=self.view.interact)
         self.gui_thread.start()
 
-       
-    
     def select_view(self, view_opt: str):
         if "view_commandline" == view_opt:
             import view_commandline
@@ -65,8 +63,6 @@ class Control:
                 if len(elem) > 20:
                     raise ValueError
                     return
-                b_cheatname = self.parse_for_model(elem)
-                cheatName = b_cheatname
                 s = False
             else:                           
                 addresses = elem.split(', ')
@@ -116,6 +112,27 @@ class Control:
         elif userAction == UserAction.END_PROGRAM:
             self.model.tear_down()
             exit(0)
+        elif userAction == UserAction.ADD_NEW_CHEAT:
+            #parse data:
+            self.check_data_from_UI(additional_data)
+
+            game_name = additional_data[0]
+            games_and_cheatcodes = []
+            for elem in additional_data[1:]:
+                if elem == "|":
+                    s = True
+                    continue
+                if s:
+                    b_cheatname = self.parse_for_model(elem)
+                    cheatName = b_cheatname 
+                    s = False
+                else:
+                    addresses = elem.split(', ')                           
+                    games_and_cheatcodes.append( {cheatName : addresses} )
+
+            #add new game
+            self.model.add_gamecheat(game_name, games_and_cheatcodes)
+            pass
         else:
             print("Control says: Action is not possible")
 

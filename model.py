@@ -18,6 +18,9 @@ class Model:
     def get_gamecheatdata(self):
         return self.gameCheatData
     
+    def add_gamecheat(self, game_name, games_and_cheatcodes):
+        self.gameCheatData.set_Game(game_name, games_and_cheatcodes)
+    
     #write data in bytes format to file
     def write_data_to_file(self):
         print("In model.write_data_to_file. This is the filename the data is written to: " + self.EXPORT_FILENAME)
@@ -82,7 +85,7 @@ class GameCheat:
         else:
             print("Cheat Code Name already exists!")
     
-    def set_cheatCodeAddresses(self,cheatName, addresses):
+    def set_cheatCodeAddresses(self, cheatName, addresses):
         if cheatName in self.cheatCodesName:
             self.cheatCodeAddresses[cheatName] = addresses
         else:
@@ -138,6 +141,19 @@ class GameCheatData:
         for g in self.gameCheats:
             if self.stringify_data(g.get_gameName())== self.stringify_data(gameName):
                 return g
+
+    def set_Game(self, game_name, games_and_cheatcodes):
+        gameCheat = GameCheat()
+        gameCheat.set_gameName(game_name)
+        print(games_and_cheatcodes)
+        for cheat in games_and_cheatcodes:
+            cheatname, addresses = list(cheat.items())[0]
+            gameCheat.set_cheatCodeName(cheatname)
+            gameCheat.set_cheatCodeAddresses(cheatname, addresses)
+
+        self.gameCheats.append(gameCheat)
+        return
+
 
     def transform_address_bytes_to_string(self, raw_address_bytes):
         addresses_array = []

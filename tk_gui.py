@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkinter import StringVar
 
+import traceback
+
 from abstract_classes import UserInterface, UserInput, UserAction, ParsingReturnValues, ViewTypes
 from model import GameCheatData, GameCheat
 import queue
@@ -37,13 +39,14 @@ class GUI(UserInterface):
             names.append( game.get_gameName() )
         O = tk.OptionMenu(self.root, variable, *names)
         O.pack()
-        return variable
+        return variable, O
 
     def interact(self):
         self.root = tk.Tk()
 
         self.cheatcode_text = self.create_info_text_field(50,50)
-        self.select_game_menu = self.create_option_menu()
+        self.new_game_name_text = self.create_info_text_field(1, 50)
+        self.select_game_menu, self.opt_menu = self.create_option_menu()
 
         frame = tk.Frame(self.root)
         frame.pack()
@@ -56,17 +59,24 @@ class GUI(UserInterface):
 
         show_all = tk.Button(frame,
                         text="Print Games",
-                        width=25,
+                        width=10,
                         command=partial(self.get_user_action, UserAction.SHOW_ALL_DATA_FROM_AR) )
         show_all.pack(side=tk.LEFT)
         show_all.config(font=("Courier", 22))
 
         show_all = tk.Button(frame,
                         text="Modify",
-                        width=25,
+                        width=10,
                         command=partial(self.get_user_action, UserAction.MODIFY_DATA) )
         show_all.pack(side=tk.LEFT)
         show_all.config(font=("Courier", 22))
+
+        add_game = tk.Button(frame,
+                        text="Add Game",
+                        width=10,
+                        command=partial(self.get_user_action, UserAction.ADD_NEW_CHEAT) )
+        add_game.pack(side=tk.BOTTOM)
+        add_game.config(font=("Courier", 22))
 
         self.root.mainloop()
     
@@ -77,6 +87,7 @@ class GUI(UserInterface):
         try:
             self.callback( UserInput(useraction,data) )
         except Exception as e:
+            print(traceback.format_exc())
             print(e)
             self.state = UserAction.ERROR_MSG
             self.fetch_model_data()
@@ -97,7 +108,11 @@ class GUI(UserInterface):
     def get_userdata_input(self):
         raw_text = self.cheatcode_text.get("1.0",tk.END + '-1c')
         lines = raw_text.splitlines()
-        cheatcodes = [self.stringify_data( self.select_game_menu.get())[:-1]]
+        #Get game name from current OptionMenu Selection
+        if self.new_game_name_text.get("1.0",tk.END + '-1c') == '':
+            cheatcodes = [self.stringify_data( self.select_game_menu.get())[:-1]]
+        else:
+            cheatcodes = [self.stringify_data( self.new_game_name_text.get("1.0",tk.END + '-1c'))[:-1]]
         
         for line in lines:
             if line == '':
@@ -144,10 +159,15 @@ class GUI(UserInterface):
             self.cheatcode_text.insert(tk.END, "You fucked up")
             pass
         elif mode == UserAction.NO_ACTION:
+
             pass
         elif mode == UserAction.EXPORT_ALL_DATA:
             pass
         elif mode == UserAction.MODIFY_DATA:
+            pass
+        elif mode == UserAction.ADD_NEW_CHEAT:
+            self.opt_menu.destroy()
+            self.select_game_menu, self.opt_menu = self.create_option_menu()
             pass
         else:
             print("View says: No Such UserAction")
