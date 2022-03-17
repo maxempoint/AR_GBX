@@ -139,11 +139,11 @@ class Control:
 if __name__ == "__main__":
     #get commandline arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument('--mock', type=str, dest='mock', default="true", help="use real device or mock data")
+    parser.add_argument('--mock', dest='mock', action='store_true', help="use real device or mock data")
     parser.add_argument('--if', type=str, dest='importfilename', default='imported_data.dat', help='File for saving device data')
-    parser.add_argument('--view', type=str, dest='viewopt',default='view_commandline', help="select view options")
+    parser.add_argument('--view', type=str, dest='viewopt',default='tk_gui', help="select view options")
     args = parser.parse_args()
-    if args.mock == "false":
-        control = Control(False, args.importfilename, args.viewopt)
-    else:
+    if args.mock:
         control = Control(True, args.importfilename, args.viewopt)
+    else:
+        control = Control(False, args.importfilename, args.viewopt)

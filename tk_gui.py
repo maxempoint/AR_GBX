@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import StringVar
+from tkinter.messagebox import askyesno
 
 import traceback
 
@@ -11,7 +12,8 @@ from functools import partial
 
 
 class GUI(UserInterface):
-    def __init__(self, callback, model):
+    def __init__(self, callback, model, test=False):
+        self.TEST = test
         self.type = ViewTypes.TKINTER_GUI
         self.CCN = "CCN "
 
@@ -33,9 +35,11 @@ class GUI(UserInterface):
     
     def create_option_menu(self):
         variable = StringVar(self.root)
-        variable.set("Select Game")
+        gameCheats = self.model.get_gamecheatdata().gameCheats
+        variable.set(gameCheats[0].get_gameName())
         names = []
-        for game in self.model.get_gamecheatdata().gameCheats:
+        for game in gameCheats:
+            print(game.get_gameName())
             names.append( game.get_gameName() )
         O = tk.OptionMenu(self.root, variable, *names)
         O.pack()
@@ -80,10 +84,21 @@ class GUI(UserInterface):
 
         self.root.mainloop()
     
-    
+    #TODO add confirmation dialog before every action
+    def confirmation_dialog(self, useraction: UserAction, data):
+        if self.TEST:
+            return True
+        return askyesno(title=str(useraction),
+                        message="Do you want to perform action: \n\n" +
+                                str(useraction) + "\n\n" + 
+                                "With data: \n\n" +
+                                str(data))
+
     def get_user_action(self, useraction : UserAction):
         self.state = useraction
         data = self.get_userdata_input()
+        if not self.confirmation_dialog(useraction, data):
+            return
         try:
             self.callback( UserInput(useraction,data) )
         except Exception as e:
@@ -154,12 +169,12 @@ class GUI(UserInterface):
                 except Exception as e:
                     print("Exception: " + e)
         elif mode == UserAction.ERROR_MSG:
+            #TODO show Error Message as pop up box
             self.cheatcode_text.delete("1.0",tk.END)
             self.cheatcode_text.update()
             self.cheatcode_text.insert(tk.END, "You fucked up")
             pass
         elif mode == UserAction.NO_ACTION:
-
             pass
         elif mode == UserAction.EXPORT_ALL_DATA:
             pass

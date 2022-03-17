@@ -9,5 +9,9 @@
 - https://libusb.sourceforge.io/api-1.0/libusb_caveats.html#configsel
 
 
+# Humble Object Testing
+- https://www.holdenrehg.com/blog/2021-08-16_odoo-patterns-humble-object
+- https://xunitpatterns.com/Humble%20Object.html
+
 # General Resources:
 - https://docs.python.org/3/library/struct.html
