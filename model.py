@@ -98,7 +98,7 @@ class GameCheat:
         return self.cheatCodesName
     
     def get_cheatCodeAddresses(self):
-        return self.cheatCodeAddresses#
+        return self.cheatCodeAddresses
     
     def delete_current_cheats(self):
         self.cheatCodesName = []
@@ -139,7 +139,7 @@ class GameCheatData:
         
     def get_Game(self,gameName):
         for g in self.gameCheats:
-            if self.stringify_data(g.get_gameName())== self.stringify_data(gameName):
+            if self.stringify_data(g.get_gameName()) == self.stringify_data(gameName):
                 return g
 
     def set_Game(self, game_name, games_and_cheatcodes):

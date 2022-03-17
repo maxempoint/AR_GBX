@@ -66,7 +66,7 @@ class UserInput():
         return self.useraction
     
     def get_action_and_data(self):
-        return (self.get_action(), self.get_data())
+        return {"useraction": self.get_action(), "data" : self.get_data()}
 
 
 class UserInterface(ABC):

@@ -72,7 +72,10 @@ class Control:
                         return
 
     def get_user_input(self, userInput: UserInput):
-        userAction, additional_data = userInput.get_action_and_data()
+        user_input = userInput.get_action_and_data()
+
+        userAction = user_input["useraction"]
+        additional_data = user_input["data"]
 
         if userAction == UserAction.NO_ACTION:
             return

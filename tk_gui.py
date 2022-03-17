@@ -22,6 +22,9 @@ class GUI(UserInterface):
         self.cheatcode_text = None
         self.cheatcode_text = None
         self.addresses_text = None
+        self.select_game_menu = None
+
+        self.selected_option = None
 
         self.state = UserAction.NO_ACTION
         self.callback = callback
@@ -39,19 +42,23 @@ class GUI(UserInterface):
         variable.set(gameCheats[0].get_gameName())
         names = []
         for game in gameCheats:
-            print(game.get_gameName())
             names.append( game.get_gameName() )
-        O = tk.OptionMenu(self.root, variable, *names)
+        O = tk.OptionMenu(  self.root,
+                            variable,
+                            *names)
         O.pack()
         return variable, O
-
-    def interact(self):
+    
+    def init_for_interaction(self):
         self.root = tk.Tk()
 
         self.cheatcode_text = self.create_info_text_field(50,50)
         self.new_game_name_text = self.create_info_text_field(1, 50)
         self.select_game_menu, self.opt_menu = self.create_option_menu()
+        
 
+    def interact(self):
+        self.init_for_interaction()
         frame = tk.Frame(self.root)
         frame.pack()
 
@@ -100,14 +107,14 @@ class GUI(UserInterface):
         if not self.confirmation_dialog(useraction, data):
             return
         try:
-            self.callback( UserInput(useraction,data) )
+            self.callback( UserInput(useraction, data) )
         except Exception as e:
             print(traceback.format_exc())
             print(e)
             self.state = UserAction.ERROR_MSG
             self.fetch_model_data()
             return
-        self.fetch_model_data()
+        return self.fetch_model_data()
     
     def stringify_data(self, data):
         #remove bystring marks
@@ -140,9 +147,21 @@ class GUI(UserInterface):
 
         return cheatcodes
 
+    def insert_into_gui(self, game_name, cheatcode_name, addresses):
+        cheatcode_name = self.stringify_data(cheatcode_name)
+        addresses = self.stringify_data(addresses)
+        self.cheatcode_text.insert(tk.END, self.CCN + cheatcode_name )
+        self.cheatcode_text.insert(tk.END, addresses )
+        self.cheatcode_text.insert(tk.END, "\n\n")
+
+        self.cheatcode_text.update()
+
+        return {"game_name" : game_name, "cheatcodes" :  cheatcode_name, "addresses" : addresses}
+
     def fetch_model_data(self):
         mode = self.state
         data = self.model.get_gamecheatdata()
+        gui_data = []
 
         if mode == UserAction.END_PROGRAM:
             self.root.quit()
@@ -154,14 +173,14 @@ class GUI(UserInterface):
 
             game_name = self.select_game_menu.get()
             game = data.get_Game(game_name)
-            
-            for cc in game.get_cheatCodeNames():
-                self.cheatcode_text.insert(tk.END, self.CCN + self.stringify_data(cc) )
-                self.cheatcode_text.insert(tk.END, self.stringify_data(game.get_cheatCodeAddresses()[cc]) )
-                self.cheatcode_text.insert(tk.END, "\n\n")
-                
-            self.cheatcode_text.update()
 
+            for cheatcode_name in game.get_cheatCodeNames():
+               gui_data.append( self.insert_into_gui(game_name,
+                                    cheatcode_name,
+                                    game.get_cheatCodeAddresses()[cheatcode_name])
+               )
+
+            return gui_data
         elif mode == UserAction.PRINT_GAME:
             for cheat in data.gameCheats:
                 try:
