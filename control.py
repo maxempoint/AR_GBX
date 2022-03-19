@@ -8,19 +8,19 @@ from abstract_classes import ParsingReturnValues
 from model import Model
 from abstract_classes import UserInput
 import threading
-import queue
 import argparse
+import logging
 
 class Control:
     def __init__(self, mock: bool, import_file: str, view_opt: str):
+        #logging.basicConfig(level=logging.INFO)
         self.mock = mock
         EXPORT_FILENAME = "new_mod_data.dat"  
         IMPORT_FILENAME = import_file
-        print("Export in Control " + EXPORT_FILENAME)
-        print("Import in Control " + IMPORT_FILENAME)
+        logging.info("Export in Control " + EXPORT_FILENAME)
+        logging.info("Import in Control " + IMPORT_FILENAME)
         self.model = Model(EXPORT_FILENAME, IMPORT_FILENAME, mock)
 
-        #self.view = view_commandline.CommandLineInterface(self.get_user_input, self.ctrl_msg_queue)
         self.view = self.select_view(view_opt)
         self.gui_thread = threading.Thread(target=self.view.interact)
         self.gui_thread.start()
@@ -81,8 +81,8 @@ class Control:
             return
         elif userAction == UserAction.MODIFY_DATA:
             #TODO   is correct
-            print("Ctrl: " + str(additional_data))
-            g = self.model.get_gamecheatdata().get_Game(additional_data[0])
+            logging.info("Ctrl: " + str(additional_data))
+            g = self.model.get_game(additional_data[0])
 
             self.check_data_from_UI(additional_data)
           
@@ -137,7 +137,7 @@ class Control:
             self.model.add_gamecheat(game_name, games_and_cheatcodes)
             pass
         else:
-            print("Control says: Action is not possible")
+            logging.info("Control says: Action is not possible")
 
 if __name__ == "__main__":
     #get commandline arguments

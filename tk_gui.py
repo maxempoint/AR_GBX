@@ -3,9 +3,10 @@ from tkinter import StringVar
 from tkinter.messagebox import askyesno
 
 import traceback
+import json
 
 from abstract_classes import UserInterface, UserInput, UserAction, ParsingReturnValues, ViewTypes
-from model import GameCheatData, GameCheat
+from model import GameCheat
 import queue
 #partial to invoke callback with arguments
 from functools import partial
@@ -38,11 +39,11 @@ class GUI(UserInterface):
     
     def create_option_menu(self):
         variable = StringVar(self.root)
-        gameCheats = self.model.get_gamecheatdata().gameCheats
-        variable.set(gameCheats[0].get_gameName())
+        gameCheats = self.model.game_cheats
+        variable.set(gameCheats[0].get_sanitized_game_name())
         names = []
         for game in gameCheats:
-            names.append( game.get_gameName() )
+            names.append( game.get_sanitized_game_name() )
         O = tk.OptionMenu(  self.root,
                             variable,
                             *names)
@@ -116,25 +117,14 @@ class GUI(UserInterface):
             return
         return self.fetch_model_data()
     
-    def stringify_data(self, data):
-        #remove bystring marks
-        if str(data)[0] == 'b':
-            stringified = str(data)[2:-1]
-        else:
-            stringified = str(data)
-        #remove unnecessary newlines
-        no_newlines = stringified.replace('\n', '')
-        no_parenth = no_newlines.replace('\'', '')
-        return no_parenth.strip() + "\n"
-    
     def get_userdata_input(self):
         raw_text = self.cheatcode_text.get("1.0",tk.END + '-1c')
         lines = raw_text.splitlines()
         #Get game name from current OptionMenu Selection
         if self.new_game_name_text.get("1.0",tk.END + '-1c') == '':
-            cheatcodes = [self.stringify_data( self.select_game_menu.get())[:-1]]
+            cheatcodes = [self.select_game_menu.get()]
         else:
-            cheatcodes = [self.stringify_data( self.new_game_name_text.get("1.0",tk.END + '-1c'))[:-1]]
+            cheatcodes = [self.new_game_name_text.get("1.0",tk.END + '-1c')[:-1]]
         
         for line in lines:
             if line == '':
@@ -147,11 +137,19 @@ class GUI(UserInterface):
 
         return cheatcodes
 
+    def clear_gui(self):
+        self.cheatcode_text.delete("1.0",tk.END)
+        self.cheatcode_text.update()
+
+
     def insert_into_gui(self, game_name, cheatcode_name, addresses):
-        cheatcode_name = self.stringify_data(cheatcode_name)
-        addresses = self.stringify_data(addresses)
-        self.cheatcode_text.insert(tk.END, self.CCN + cheatcode_name )
-        self.cheatcode_text.insert(tk.END, addresses )
+
+        self.new_game_name_text.delete("1.0", tk.END)
+        self.new_game_name_text.update()
+        self.new_game_name_text.insert(tk.END, game_name)
+
+        self.cheatcode_text.insert(tk.END, self.CCN + cheatcode_name +"\n")
+        self.cheatcode_text.insert(tk.END, ', '.join(addresses) +"\n")
         self.cheatcode_text.insert(tk.END, "\n\n")
 
         self.cheatcode_text.update()
@@ -160,24 +158,23 @@ class GUI(UserInterface):
 
     def fetch_model_data(self):
         mode = self.state
-        data = self.model.get_gamecheatdata()
+        data_json = self.model.get_games_as_json()
+        data_dict = json.loads(data_json)
         gui_data = []
 
         if mode == UserAction.END_PROGRAM:
             self.root.quit()
         elif mode == UserAction.SHOW_ALL_DATA_FROM_AR:
-            
-            #remove previous text
-            self.cheatcode_text.delete("1.0",tk.END)
-            self.cheatcode_text.update()
 
             game_name = self.select_game_menu.get()
-            game = data.get_Game(game_name)
+            cheat_codes = data_dict[game_name]
 
-            for cheatcode_name in game.get_cheatCodeNames():
+            #remove previous text
+            self.clear_gui()        
+            for cheatcode_name in cheat_codes:
                gui_data.append( self.insert_into_gui(game_name,
                                     cheatcode_name,
-                                    game.get_cheatCodeAddresses()[cheatcode_name])
+                                    cheat_codes[cheatcode_name])
                )
 
             return gui_data

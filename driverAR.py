@@ -5,11 +5,12 @@ import usb.util
 import sys
 import time
 from struct import *
+import logging
 
 class PythonDriver(AbstractDriverAR):
     def __init__(self, export_filename, import_filename, mock=False):
-        print("Export in PythonDriver " + export_filename)
-        print("Import in PythonDriver " + import_filename)
+        logging.info("Export in PythonDriver " + export_filename)
+        logging.info("Import in PythonDriver " + import_filename)
         self.mock = mock
         if mock:
             self.DATA_FILE = "mock_data.dat"
@@ -40,13 +41,13 @@ class PythonDriver(AbstractDriverAR):
         if dev is None:
             raise ValueError('Device not found') 
         else:
-            print("GBA Link found")
+            logging.info("GBA Link found")
 
         #check if there is already a driver attached to the device
         i = dev[0].interfaces()[0].bInterfaceNumber
         if dev.is_kernel_driver_active(i):
             dev.detach_kernel_driver(i)
-            print("Driver active!")
+            logging.info("Driver active!")
 
         #set appropriate config
         cfg_desired = usb.util.find_descriptor(dev, bConfigurationValue=1)
@@ -68,7 +69,7 @@ class PythonDriver(AbstractDriverAR):
         i = self.dev[0].interfaces()[0].bInterfaceNumber
         if self.dev.is_kernel_driver_active(i):
             self.dev.detach_kernel_driver(i)
-            print("Driver active!")
+            logging.info("Driver active!")
         cfg_desired = usb.util.find_descriptor(self.dev, bConfigurationValue=1)
         self.dev.set_configuration(cfg_desired)
         try:
@@ -80,18 +81,18 @@ class PythonDriver(AbstractDriverAR):
         return
         try:
             cfg = self.dev.get_active_configuration()
-            print(cfg)
+            logging.info(cfg)
         except usb.core.USBError:
-            print("[!] USBError in get and set usb config")
-            print(usb.core.USBError)
+            logging.info("[!] USBError in get and set usb config")
+            logging.info(usb.core.USBError)
             cfg = None
         if cfg.bConfigurationValue != 0:
             self.cfg_desired.bConfigurationValue = 0
-            print(self.cfg_desired)
+            logging.info(self.cfg_desired)
             self.dev.set_configuration(self.cfg_desired)
 
     def __write_data_to_file(self,data):
-        print("In driverAR. This is the filename which the device data is written to: " + self.DATA_FILE)
+        logging.info("In driverAR. This is the filename which the device data is written to: " + self.DATA_FILE)
         f = open(self.DATA_FILE,'wb')
         new = []
         for elem in data:
@@ -105,7 +106,7 @@ class PythonDriver(AbstractDriverAR):
             ret = self.dev.read(self.ENDPOINT_ADDRESS_OUT,8,1000)
             return ret.tolist()
         except Exception as e:
-            print("Exception in single_read_request {0}".format(e))
+            logging.info("Exception in single_read_request {0}".format(e))
             return [-1]
     
     def single_write_request(self, msg):
@@ -151,52 +152,52 @@ class PythonDriver(AbstractDriverAR):
         self.write_and_read_request(self.END_WRITE_CODE)
         self.__get_and_set_usb_config()
         #save cheat code data to a file
-        #print("In driver. This is the read data from device: " + str(data))
+        #logging.info("In driver. This is the read data from device: " + str(data))
         self.__write_data_to_file(data)
     
     
     def write_data_to_device(self, num_of_games):
         usb.util.dispose_resources(self.dev)
-        print("In driverAR.write_data_to_device. This file is read and its content written to the device "+ self.SOURCE_FILENAME)
+        logging.info("In driverAR.write_data_to_device. This file is read and its content written to the device "+ self.SOURCE_FILENAME)
         file_handler = open(self.SOURCE_FILENAME,'rb')
         data_to_send = file_handler.read()
         file_handler.close()
 
         NUM_OF_GAMES = pack("<B",num_of_games) #TODO parse number from SOURCE_FILENAME
         
-        print("EXPORT CODES")
-        print("-------------")
+        logging.info("EXPORT CODES")
+        logging.info("-------------")
 
         #1
         # self.single_write_request(self.WRITE_CODE)
-        # print(self.single_read_request())
+        # logging.info(self.single_read_request())
         req, res = self.write_and_read_request(self.WRITE_CODE)
-        print("After WRITE_CODE is send: " + str(res))
+        logging.info("After WRITE_CODE is send: " + str(res))
         #TODO find out why this is needed sometimes...
         if res != [0,0,0,0,0,0,0,0]:
             req, res = self.write_and_read_request(self.WRITE_CODE)
-            print("After 2. WRITE_CODE is send: " + str(res))
+            logging.info("After 2. WRITE_CODE is send: " + str(res))
 
         #2: send num of games
         # self.single_write_request(NUM_OF_GAMES + b'\x00\x00\x00\x00\x00\x00\x00')
         # result = self.single_read_request()
         req, res = self.write_and_read_request(NUM_OF_GAMES + b'\x00\x00\x00\x00\x00\x00\x00')
-        print("After num of games is send: " + str(res))
+        logging.info("After num of games is send: " + str(res))
         if NUM_OF_GAMES[0] == 0:
             return
 
         #3: write games and codes in loop
         for i in range(int(len(data_to_send)/8)):
-            #print(data_to_send[i*8:8*(i+1)])
+            #logging.info(data_to_send[i*8:8*(i+1)])
             self.single_write_request(data_to_send[i*8:8*(i+1)])
-            print(self.single_read_request())
+            logging.info(self.single_read_request())
         
         self.single_write_request(self.END_WRITE_CODE)
 
-        print(self.single_read_request())
+        logging.info(self.single_read_request())
         
 
     def exit_driver(self):
         if not self.mock:
-            print("Unloading Driver")
+            logging.info("Unloading Driver")
             usb.util.dispose_resources(self.dev)
