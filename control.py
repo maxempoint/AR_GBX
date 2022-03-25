@@ -48,16 +48,28 @@ class Control:
     # {String : {String : [HexStrings]}}
     # {GameName : { Cheat00: [addr1, addr2, ...], Cheat01 : [...], ...} }
     def check_data_from_UI(self, additional_data):
+        #check types
+        if type(additional_data) is not dict:
+            logging.error(f"Wrong data type: {type(additional_data)}")
+            raise ValueError()
         for game_name in additional_data:
             #Check length of game names
             if len(game_name) > 20:
                 raise ValueError()
-
+            #Check type
+            if type(additional_data[game_name]) is not dict:
+                logging.error(f"Wrong data type: {type(additional_data[game_name])}")
+                raise ValueError()
             #Check game_cheat names
             for cc in additional_data[game_name]:
                 if len(cc) > 20:
                     raise ValueError()
                 for addresses in additional_data[game_name][cc]:
+                    #check type
+                    if type(addresses) is not list:
+                        logging.error(f"Wrong data type: {type(addresses)}")
+                        raise ValueError()
+                    #Check if addresses have the correct hex data format
                     map(lambda addr: self.check_hex_data(addr), addresses)
 
         return True
