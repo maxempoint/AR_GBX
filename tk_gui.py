@@ -39,11 +39,11 @@ class GUI(UserInterface):
     
     def create_option_menu(self):
         variable = StringVar(self.root)
-        gameCheats = self.model.game_cheats
-        variable.set(gameCheats[0].get_sanitized_game_name())
+        gameCheats = json.loads(self.model.get_games_as_json())
+        variable.set(list(gameCheats)[0])
         names = []
         for game in gameCheats:
-            names.append( game.get_sanitized_game_name() )
+            names.append( game )
         O = tk.OptionMenu(  self.root,
                             variable,
                             *names)
@@ -116,26 +116,31 @@ class GUI(UserInterface):
             self.fetch_model_data()
             return
         return self.fetch_model_data()
-    
+
+###|--HUMBLE-OBJECT--|###    
+
+    #This function should return a dict object, structured like this:
+    # {String : {String : [HexStrings]}}
+    # {GameName : { Cheat00: [addr1, addr2, ...], Cheat01 : [...], ...} }
     def get_userdata_input(self):
         raw_text = self.cheatcode_text.get("1.0",tk.END + '-1c')
         lines = raw_text.splitlines()
         #Get game name from current OptionMenu Selection
         if self.new_game_name_text.get("1.0",tk.END + '-1c') == '':
-            cheatcodes = [self.select_game_menu.get()]
+            game_name = self.select_game_menu.get()
         else:
-            cheatcodes = [self.new_game_name_text.get("1.0",tk.END + '-1c')[:-1]]
-        
+            game_name = self.new_game_name_text.get("1.0",tk.END + '-1c')
+
+        cheatcodes = {}
         for line in lines:
             if line == '':
                 continue
             if line.startswith(self.CCN):
-                cheatcodes.append("|")
-                cheatcodes.append(line[4:])
+                current_cheat_name = line[4:]
             else:
-                cheatcodes.append(line[1:-1])
+                cheatcodes[current_cheat_name] = [line[1:-1]]
 
-        return cheatcodes
+        return {game_name : cheatcodes}
 
     def clear_gui(self):
         self.cheatcode_text.delete("1.0",tk.END)
@@ -144,7 +149,7 @@ class GUI(UserInterface):
 
     def insert_into_gui(self, game_name, cheatcode_name, addresses):
 
-        self.new_game_name_text.delete("1.0", tk.END)
+        self.new_game_name_text.delete("1.0",tk.END)
         self.new_game_name_text.update()
         self.new_game_name_text.insert(tk.END, game_name)
 
@@ -155,6 +160,8 @@ class GUI(UserInterface):
         self.cheatcode_text.update()
 
         return {"game_name" : game_name, "cheatcodes" :  cheatcode_name, "addresses" : addresses}
+
+###^--HUMBLE-OBJECT--^### 
 
     def fetch_model_data(self):
         mode = self.state

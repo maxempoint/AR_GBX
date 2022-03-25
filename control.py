@@ -35,41 +35,32 @@ class Control:
         else:
             raise ValueError
     
-    def parse_for_model(self, data):
-        b_data = data.ljust(20).encode()
-        return b_data
-    
+
     def check_hex_data(self, data):
         try:
             int(data, 16)
         except:
-            return False
-
-        if len(data) == 10:
-            return True
-        else:
-            return False      
-        
-        return check
+            raise ValueError()
+        if len(data) != 10:
+            raise ValueError()
     
+    #TODO Check this:
+    # {String : {String : [HexStrings]}}
+    # {GameName : { Cheat00: [addr1, addr2, ...], Cheat01 : [...], ...} }
     def check_data_from_UI(self, additional_data):
-        s = False
-        cheatName = ''
-        for elem in additional_data[1:]:
-            if elem == "|":
-                s = True
-                continue
-            if s:
-                if len(elem) > 20:
-                    raise ValueError
-                    return
-                s = False
-            else:                           
-                addresses = elem.split(', ')
-                for addr in addresses:
-                    if not self.check_hex_data(addr):
-                        raise ValueError
-                        return
+        for game_name in additional_data:
+            #Check length of game names
+            if len(game_name) > 20:
+                raise ValueError()
+
+            #Check game_cheat names
+            for cc in additional_data[game_name]:
+                if len(cc) > 20:
+                    raise ValueError()
+                for addresses in additional_data[game_name][cc]:
+                    map(lambda addr: self.check_hex_data(addr), addresses)
+
+        return True
 
     def get_user_input(self, userInput: UserInput):
         user_input = userInput.get_action_and_data()
@@ -80,37 +71,22 @@ class Control:
         if userAction == UserAction.NO_ACTION:
             return
         elif userAction == UserAction.MODIFY_DATA:
-            #TODO   is correct
-            logging.info("Ctrl: " + str(additional_data))
-            g = self.model.get_game(additional_data[0])
-
             self.check_data_from_UI(additional_data)
-          
-            g.delete_current_cheats()
-            s = False
-            cheatName = ''
-            for elem in additional_data[1:]:
-                if elem == "|":
-                    s = True
-                    continue
-                if s:
-                    b_cheatname = self.parse_for_model(elem)
-                    g.set_cheatCodeName(b_cheatname)
-                    cheatName = b_cheatname 
-                    s = False
-                else:
-                    addresses = elem.split(', ')                           
-                    g.set_cheatCodeAddresses(cheatName, addresses)
 
+            logging.info("Ctrl: " + str(additional_data))
+            g = self.model.get_game(list(additional_data)[0])
+
+            game_name = list(additional_data)[0]
+            games_and_cheatcodes = additional_data[game_name]
+
+            self.model.modify_gamecheat(game, games_and_cheatcodes[game.get_sanitized_game_name()])
+
+        elif userAction == UserAction.EXPORT_ALL_DATA:
             if not self.mock:
                 self.model.write_data_to_device()
                 self.model.driver.read_data()
             else:
                 self.model.write_data_to_file()
-
-        elif userAction == UserAction.EXPORT_ALL_DATA:
-            
-            self.model.write_data_to_device()
         #TODO DELETE_SINGLE_GAME
         elif userAction == UserAction.END_PROGRAM:
             self.model.tear_down()
@@ -119,22 +95,11 @@ class Control:
             #parse data:
             self.check_data_from_UI(additional_data)
 
-            game_name = additional_data[0]
-            games_and_cheatcodes = []
-            for elem in additional_data[1:]:
-                if elem == "|":
-                    s = True
-                    continue
-                if s:
-                    b_cheatname = self.parse_for_model(elem)
-                    cheatName = b_cheatname 
-                    s = False
-                else:
-                    addresses = elem.split(', ')                           
-                    games_and_cheatcodes.append( {cheatName : addresses} )
+            game_name = list(additional_data)[0]
+            games_and_cheatcodes = additional_data[game_name]
 
             #add new game
-            self.model.add_gamecheat(game_name, games_and_cheatcodes)
+            self.model.add_gamecheat(game_name, games_and_cheatcodes[game_name])
             pass
         else:
             logging.info("Control says: Action is not possible")

@@ -11,7 +11,7 @@ from model import Model
 class TestModel(unittest.TestCase):
 
     def setUp(self):
-        #logging.basicConfig(level=logging.WARNING)
+        logging.basicConfig(level=logging.WARNING)
         MOCK_DATA_FILENAME = "model_test_data.dat"
         EXPORT_FILENAME = "model_test_export.dat"
 
@@ -28,14 +28,14 @@ class TestModel(unittest.TestCase):
 
     #test if all ctrl messages are handled
     def test01_model_data_is_written_to_file(self):
-        self.model.add_gamecheat(self.parse_for_model("A Land Before Time"),
-                                                    [{self.parse_for_model("(m)"):
+        self.model.add_gamecheat("A Land Before Time",
+                                                    {"(m)":
                                                             ["0x2d63b4bd",
                                                             "0xab2b7f63",
                                                             "0xa059f71f",
                                                             "0x48451527"],
                                                             
-                                                            }])
+                                                            })
         self.model.write_data_to_file()
 
         file_handler = open(self.model.EXPORT_FILENAME, 'rb')

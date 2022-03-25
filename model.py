@@ -27,28 +27,40 @@ class Model:
     def get_games_as_json(self):
         all_games = {}
         for g in self.game_cheats:
-            all_games |= g.get_sanitized_game_data()
+            all_games |= g.get_sanitized_game_data() #concat dictionaries
         return json.dumps(all_games)
 
     def get_num_of_games(self):
         return len(self.gameCheats)
 
-###--Manipulate-Internal-Data--###    
-    
+###--Manipulate-Internal-Data--###
+
+    #This changes the type of the String-Data to Byte-Strings
+    #Note: thereby the instances of GameCheat hold the appropriate data type for the driver interaction
+    def parse_for_model(self, data):
+        b_data = data.ljust(20).encode()
+        return b_data
+
     def add_gamecheat(self, game_name, games_and_cheatcodes):
-        #TODO Checks + sanitation einbauen
         gameCheat = GameCheat()
-        gameCheat.set_gameName(game_name)
+        self.modify_gamecheat(gameCheat, game_name, games_and_cheatcodes)
+    
+    #TODO parsing data for the model
+    #games_and_cheats : {String : [HexStrings]}
+    def modify_gamecheat(self, game, game_name, games_and_cheatcodes):
+        #TODO Checks + sanitation einbauen
+        game.delete_cheats()
+        game.set_gameName( self.parse_for_model( game_name ) )
         logging.info(games_and_cheatcodes)
         for cheat in games_and_cheatcodes:
-            cheatname, addresses = list(cheat.items())[0]
-            gameCheat.set_cheatCodeName(cheatname)
-            gameCheat.set_cheatCodeAddresses(cheatname, addresses)
+            cheatname = self.parse_for_model( cheat )
+            addresses = games_and_cheatcodes[cheat]
+            game.set_cheatCodeName(cheatname)
+            game.set_cheatCodeAddresses(cheatname, addresses)
 
-        self.game_cheats.append(gameCheat)
+        self.game_cheats.append(game)
         return
 
-    
     def delete_current_gamecheats(self):
         self.gameCheats = []
 
@@ -165,7 +177,11 @@ class GameCheat:
         self.cheatCodesName = []
         #dict with {cheatCodesName[i]: [list of str]}
         self.cheatCodeAddresses = {}
-    
+
+    def delete_cheats(self):
+        self.cheatCodesName = []
+        self.cheatCodeAddresses = {}
+
     def set_gameName(self, name):
         self.gameName = name
     
