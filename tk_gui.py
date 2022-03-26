@@ -92,7 +92,7 @@ class GUI(UserInterface):
 
         self.root.mainloop()
     
-    #TODO add confirmation dialog before every action
+    #Adds confirmation dialog before every action
     def confirmation_dialog(self, useraction: UserAction, data):
         if self.TEST:
             return True
@@ -138,7 +138,7 @@ class GUI(UserInterface):
             if line.startswith(self.CCN):
                 current_cheat_name = line[4:]
             else:
-                cheatcodes[current_cheat_name] = [line[1:-1]]
+                cheatcodes[current_cheat_name] = line.split(', ')
 
         return {game_name : cheatcodes}
 

@@ -9,14 +9,10 @@ import control
 from abstract_classes import UserAction, UserInput, ViewTypes
 from model import Model
 
-
-
-#TODO try humble object approach
-
 class TestGUI(unittest.TestCase):
 
     def setUp(self):
-        #logging.basicConfig(level=logging.WARNING)
+        logging.basicConfig(level=logging.WARNING)
         MOCK_DATA_FILENAME = "test_data.dat"#"test_all_games.dat"#"## #
         EXPORT_FILENAME = "test_export_file_for_gamecheatdata_class.dat"
 
@@ -46,7 +42,7 @@ class TestGUI(unittest.TestCase):
             self.view.get_user_action(UserAction.SHOW_ALL_DATA_FROM_AR)
 
             #Check data if UserInput data in callback_ret is correct
-            self.assertEqual(game_name, self.callback_ret["data"][0])
+            self.assertEqual(game_name, list( self.callback_ret["data"] )[0])
 
     def test02_correct_data_is_presented(self):
         gameCheats = self.model.game_cheats
@@ -55,7 +51,7 @@ class TestGUI(unittest.TestCase):
             game_name = cheat.get_sanitized_game_name()
             cheatcodes = cheat.get_sanitized_cheatCodeNames()
             num_cheatcodes = len (cheatcodes)
-            addresses = cheat.get_cheatCodeAddresses()
+            addresses = cheat.get_sanitized_cheatCodeAddresses()
 
             self.view.select_game_menu.set(game_name)
             gui_data = self.view.get_user_action(UserAction.SHOW_ALL_DATA_FROM_AR)
@@ -70,49 +66,39 @@ class TestGUI(unittest.TestCase):
                                 cheatcodes )
 
                 for cc in addresses:
-                    if self.stringify(cc) == insert["cheatcodes"]:
+                    if cc == insert["cheatcodes"]:
                         self.assertEqual(addresses[cc], insert["addresses"])
-
-    def check_UI_data(additional_data):
-        s = False
-        cheatName = ''
-        for elem in additional_data[1:]:
-            if elem == "|":
-                s = True
-                continue
-            if s:
-                if len(elem) > 20:
-                    raise ValueError
-                    return
-                s = False
-            else:                           
-                addresses = elem.split(', ')
-                for addr in addresses:
-                    if not self.check_hex_data(addr):
-                        raise ValueError
-                        return
 
     def test03_modify_data(self):
         gameCheats = self.model.game_cheats
         gui_data = []
+        test_game_name = "test"
 
+        self.view.clear_gui()
+        #
+        #Insert mutltiple cheatcodes+addresses with the same game name
+        gui_data.append(self.view.insert_into_gui(test_game_name, "my_cheat_code00", ["0x0","0x1","0x2"]))
+        gui_data.append(self.view.insert_into_gui(test_game_name, "my_cheat_code01", ["0x3","0x4","0x5"]))
+        gui_data.append(self.view.insert_into_gui(test_game_name, "my_cheat_code02", ["0x4","0x7","0x8"]))
 
-        gui_data.append(self.view.insert_into_gui("test", "my_cheat_code00", ["0x0","0x1","0x2"]))
-        gui_data.append(self.view.insert_into_gui("test", "my_cheat_code01", ["0x3","0x4","0x5"]))
-        gui_data.append(self.view.insert_into_gui("test", "my_cheat_code02", ["0x4","0x7","0x8"]))
-
+        #Trigger the modify data action
         self.view.get_user_action(UserAction.MODIFY_DATA)
 
-        # logging.warning("Test03 GUI DATA in Test " + str(gui_data))
-        # logging.warning("Test03 Callback: " + str(self.callback_ret))
+        #extract the data that was given to the insert_function
+        gui_cheatcodes = []
+        gui_addresses = []
+        gui_game_name = test_game_name
+        for d in gui_data:
+            gui_cheatcodes.append(d["cheatcodes"])
+            gui_addresses.append(d["addresses"])
 
-        gui_game_name = gui_data[0]["game_name"]
-        gui_cheatcode = gui_data[1]["cheatcodes"]
-        gui_addresses = gui_data[2]["addresses"]
+        callback_game_name = list( self.callback_ret["data"] )[0]
+        callback_cheatcodes = list(self.callback_ret["data"][callback_game_name].keys())
+        callback_addresses = list(self.callback_ret["data"][callback_game_name].values())
 
-        # self.assertEqual(gui_game_name, self.callback_ret["data"][0])
-        # self.assertEqual(gui_cheatcode, self.callback_ret["data"][2]+'\n')
-        # self.assertEqual(gui_addresses, "[" + self.callback_ret["data"][3] + "]\n")
+        self.assertEqual(gui_game_name, callback_game_name)
+        self.assertEqual(gui_cheatcodes, callback_cheatcodes)
+        self.assertEqual(gui_addresses, callback_addresses)
 
         #TODO check if those are in fact correct (according to the spec control.py accepts)
         
