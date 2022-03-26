@@ -45,10 +45,9 @@ class Model:
         gameCheat = GameCheat()
         self.modify_gamecheat(gameCheat, game_name, games_and_cheatcodes)
     
-    #TODO parsing data for the model
+    #parsing data for the model
     #games_and_cheats : {String : [HexStrings]}
     def modify_gamecheat(self, game, game_name, games_and_cheatcodes):
-        #TODO Checks + sanitation einbauen
         game.delete_cheats()
         game.set_gameName( self.parse_for_model( game_name ) )
         logging.info(games_and_cheatcodes)
@@ -169,7 +168,6 @@ class Model:
 
 
 class GameCheat:
-    #TODO ID for easier reference
     def __init__(self):
         #str
         self.gameName = ''

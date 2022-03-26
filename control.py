@@ -44,7 +44,7 @@ class Control:
         if len(data) != 10:
             raise ValueError()
     
-    #TODO Check this:
+    #This format is checked:
     # {String : {String : [HexStrings]}}
     # {GameName : { Cheat00: [addr1, addr2, ...], Cheat01 : [...], ...} }
     def check_data_from_UI(self, additional_data):
