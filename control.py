@@ -40,6 +40,7 @@ class Control:
         try:
             int(data, 16)
         except:
+            logging.error("Hex Data not correct")
             raise ValueError()
         if len(data) != 10:
             raise ValueError()
@@ -50,7 +51,7 @@ class Control:
     def check_data_from_UI(self, additional_data):
         #check types
         if type(additional_data) is not dict:
-            logging.error(f"Wrong data type: {type(additional_data)}")
+            logging.error(f"Wrong data type of additional_data: {type(additional_data)}")
             raise ValueError()
         for game_name in additional_data:
             #Check length of game names
@@ -58,7 +59,7 @@ class Control:
                 raise ValueError()
             #Check type
             if type(additional_data[game_name]) is not dict:
-                logging.error(f"Wrong data type: {type(additional_data[game_name])}")
+                logging.error(f"Wrong data type of additional_data[game_name]: {type(additional_data[game_name])}")
                 raise ValueError()
             #Check game_cheat names
             for cc in additional_data[game_name]:
@@ -66,11 +67,13 @@ class Control:
                     raise ValueError()
                 for addresses in additional_data[game_name][cc]:
                     #check type
-                    if type(addresses) is not list:
-                        logging.error(f"Wrong data type: {type(addresses)}")
+                    if type(addresses) is not str:
+                        logging.error(f"Wrong data type of addresses: {type(addresses)}")
+                        print(addresses)
                         raise ValueError()
                     #Check if addresses have the correct hex data format
-                    map(lambda addr: self.check_hex_data(addr), addresses)
+                    list(map(lambda addr: self.check_hex_data(addr), addresses)) #list() to trigger lazy evaluation
+
 
         return True
 
@@ -86,12 +89,11 @@ class Control:
             self.check_data_from_UI(additional_data)
 
             logging.info("Ctrl: " + str(additional_data))
-            g = self.model.get_game(list(additional_data)[0])
+            game = self.model.get_game(list(additional_data)[0])
 
             game_name = list(additional_data)[0]
             games_and_cheatcodes = additional_data[game_name]
-
-            self.model.modify_gamecheat(game, games_and_cheatcodes[game.get_sanitized_game_name()])
+            self.model.modify_gamecheat(game, game_name, games_and_cheatcodes)
 
         elif userAction == UserAction.EXPORT_ALL_DATA:
             if not self.mock:
@@ -111,7 +113,7 @@ class Control:
             games_and_cheatcodes = additional_data[game_name]
 
             #add new game
-            self.model.add_gamecheat(game_name, games_and_cheatcodes[game_name])
+            self.model.add_gamecheat(game_name, games_and_cheatcodes)
             pass
         else:
             logging.info("Control says: Action is not possible")

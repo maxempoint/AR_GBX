@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import StringVar
 from tkinter.messagebox import askyesno
+from tkinter import messagebox
 
 import traceback
 import json
@@ -17,6 +18,8 @@ class GUI(UserInterface):
         self.TEST = test
         self.type = ViewTypes.TKINTER_GUI
         self.CCN = "CCN "
+        self.error = None
+        self.traceback = None
 
         self.root = None
         #TODO Define different Text Fields for different data (game name, cheatname, etc.)
@@ -91,7 +94,14 @@ class GUI(UserInterface):
         add_game.config(font=("Courier", 22))
 
         self.root.mainloop()
-    
+    #Error Message Pop up
+    def error_msg_dialog(self):
+        messagebox.showerror("ERROR", "An error occurred:\n" +
+                            str(self.error) +
+                            "\n\n" +
+                            "Traceback\n" +
+                            str(self.traceback) )
+
     #Adds confirmation dialog before every action
     def confirmation_dialog(self, useraction: UserAction, data):
         if self.TEST:
@@ -110,8 +120,8 @@ class GUI(UserInterface):
         try:
             self.callback( UserInput(useraction, data) )
         except Exception as e:
-            print(traceback.format_exc())
-            print(e)
+            self.traceback = traceback.format_exc()
+            self.error = e
             self.state = UserAction.ERROR_MSG
             self.fetch_model_data()
             return
@@ -132,12 +142,13 @@ class GUI(UserInterface):
             game_name = self.new_game_name_text.get("1.0",tk.END + '-1c')
 
         cheatcodes = {}
+        current_cheat_name = ""
         for line in lines:
             if line == '':
                 continue
             if line.startswith(self.CCN):
                 current_cheat_name = line[4:]
-            else:
+            elif current_cheat_name!="":
                 cheatcodes[current_cheat_name] = line.split(', ')
 
         return {game_name : cheatcodes}
@@ -195,7 +206,7 @@ class GUI(UserInterface):
             #TODO show Error Message as pop up box
             self.cheatcode_text.delete("1.0",tk.END)
             self.cheatcode_text.update()
-            self.cheatcode_text.insert(tk.END, "You fucked up")
+            self.error_msg_dialog()
             pass
         elif mode == UserAction.NO_ACTION:
             pass
