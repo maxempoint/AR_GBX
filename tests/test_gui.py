@@ -75,7 +75,8 @@ class TestGUI(unittest.TestCase):
         test_game_name = "test"
 
         self.view.clear_gui()
-        #
+
+        #>GUI gets data
         #Insert mutltiple cheatcodes+addresses with the same game name
         gui_data.append(self.view.insert_into_gui(test_game_name, "my_cheat_code00", ["0x0","0x1","0x2"]))
         gui_data.append(self.view.insert_into_gui(test_game_name, "my_cheat_code01", ["0x3","0x4","0x5"]))
@@ -92,16 +93,17 @@ class TestGUI(unittest.TestCase):
             gui_cheatcodes.append(d["cheatcodes"])
             gui_addresses.append(d["addresses"])
 
+        #<GUI returns data in the form {String : {String : [HexStrings]}}
         callback_game_name = list( self.callback_ret["data"] )[0]
         callback_cheatcodes = list(self.callback_ret["data"][callback_game_name].keys())
         callback_addresses = list(self.callback_ret["data"][callback_game_name].values())
 
+        #Check type
+        self.assertEqual(type( {"test" : {"c0" : ["1","2"]}} ),type( self.callback_ret["data"][callback_game_name] ))
+
         self.assertEqual(gui_game_name, callback_game_name)
         self.assertEqual(gui_cheatcodes, callback_cheatcodes)
         self.assertEqual(gui_addresses, callback_addresses)
-
-        #TODO check if those are in fact correct (according to the spec control.py accepts)
-        
 
     #TODO test-case for adding a new game
     def test04_add_new_game(self):
