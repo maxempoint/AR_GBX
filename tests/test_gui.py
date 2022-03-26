@@ -105,13 +105,6 @@ class TestGUI(unittest.TestCase):
         self.assertEqual(gui_cheatcodes, callback_cheatcodes)
         self.assertEqual(gui_addresses, callback_addresses)
 
-    #TODO test-case for adding a new game
-    def test04_add_new_game(self):
-        gameCheats = self.model.game_cheats
-
-        g = self.model.get_games_as_json()
-       # print(g)
-        pass
 
 if __name__ == '__main__':
     unittest.main()
