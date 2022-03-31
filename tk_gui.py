@@ -203,7 +203,6 @@ class GUI(UserInterface):
                 except Exception as e:
                     print("Exception: " + e)
         elif mode == UserAction.ERROR_MSG:
-            #TODO show Error Message as pop up box
             self.cheatcode_text.delete("1.0",tk.END)
             self.cheatcode_text.update()
             self.error_msg_dialog()

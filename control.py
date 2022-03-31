@@ -26,14 +26,11 @@ class Control:
         self.gui_thread.start()
 
     def select_view(self, view_opt: str):
-        if "view_commandline" == view_opt:
-            import view_commandline
-            return view_commandline.CommandLineInterface(self.get_user_input, self.model)
-        elif "tk_gui" == view_opt:
+        if "tk_gui" == view_opt:
             import tk_gui
             return tk_gui.GUI(self.get_user_input, self.model)
         else:
-            raise ValueError
+            raise ValueError()
     
 
     def check_hex_data(self, data):
@@ -43,6 +40,7 @@ class Control:
             logging.error("Hex Data not correct")
             raise ValueError()
         if len(data) != 10:
+            logging.error(f"Hex Data {data} length {len(data)} is not correct")
             raise ValueError()
     
     #This format is checked:
@@ -65,14 +63,14 @@ class Control:
             for cc in additional_data[game_name]:
                 if len(cc) > 20:
                     raise ValueError()
-                for addresses in additional_data[game_name][cc]:
+                for address in additional_data[game_name][cc]:
                     #check type
-                    if type(addresses) is not str:
-                        logging.error(f"Wrong data type of addresses: {type(addresses)}")
-                        print(addresses)
+                    if type(address) is not str:
+                        logging.error(f"Wrong data type of address: {type(address)}")
+                        print(address)
                         raise ValueError()
-                    #Check if addresses have the correct hex data format
-                    list(map(lambda addr: self.check_hex_data(addr), addresses)) #list() to trigger lazy evaluation
+                    #Check if address have the correct hex data format
+                    self.check_hex_data(address)
 
 
         return True
