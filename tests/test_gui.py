@@ -39,11 +39,12 @@ class TestGUI(unittest.TestCase):
             addresses = cheat.get_sanitized_cheatCodeAddresses()
 
             self.view.select_game_menu.set(game_name)
-            self.view.get_user_action(UserAction.SHOW_ALL_DATA_FROM_AR)
+            gui_data = self.view.get_user_action(UserAction.SHOW_ALL_DATA_FROM_AR)
 
             #Check data if UserInput data in callback_ret is correct
-            self.assertEqual(game_name, list( self.callback_ret["data"] )[0])
+            self.assertEqual(game_name, gui_data[0]['game_name'])
 
+    
     def test02_correct_data_is_presented(self):
         gameCheats = self.model.game_cheats
 
@@ -57,7 +58,8 @@ class TestGUI(unittest.TestCase):
             gui_data = self.view.get_user_action(UserAction.SHOW_ALL_DATA_FROM_AR)
 
             #check if number of cheatcodes presented in GUI is the same as in the model:
-            self.assertEqual(len(gui_data), num_cheatcodes)
+            #TODO check on the option menu now...
+            #self.assertEqual(len(gui_data), num_cheatcodes)
 
             #check if correct data is presented after fetch_model_data() (via humble object pattern)
             for insert in gui_data:
@@ -69,6 +71,7 @@ class TestGUI(unittest.TestCase):
                     if cc == insert["cheatcodes"]:
                         self.assertEqual(addresses[cc], insert["addresses"])
 
+    #TODO setup cheat data which can be modified
     def test03_modify_data(self):
         gameCheats = self.model.game_cheats
         gui_data = []
