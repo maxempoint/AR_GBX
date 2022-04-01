@@ -21,7 +21,6 @@ class GUI(UserInterface):
         self.traceback = None
 
         self.root = None
-        #TODO Define different Text Fields for different data (game name, cheatname, etc.)
         self.cheatcode_text = None
         self.addresses_entries_frame = None
         self.select_game_menu = None
@@ -54,21 +53,49 @@ class GUI(UserInterface):
             entry.pack()
         return frame
     
+    def __update_cheatcode_entries_on_select(self):
+        self.clear_gui()
+
+        selected_game_name = self.select_game_menu.get()
+        selected_cheat_code_name = self.select_cheatcode.get()
+        cheat_codes = self.model_data[selected_game_name]
+        
+        self.insert_into_gui(
+                            selected_game_name,
+                            selected_cheat_code_name,
+                            cheat_codes[selected_cheat_code_name]
+                            )
+
     def create_cheatcode_option_menu(self, master, row, column):
         variable = StringVar(master)
         #Get currently selected game
         game_name = self.select_game_menu.get()
         cheat_names = self.model_data[game_name]
-        variable.set(list(cheat_names)[0])
+        first_cheatcode_name = list(cheat_names)[0]
+        variable.set(first_cheatcode_name)
         names = []
+        first_cheat_addresses = cheat_names[first_cheatcode_name]
         for cheat in cheat_names:
             names.append( cheat )
         O = tk.OptionMenu(  self.root,
                             variable,
-                            *names)
+                            *names,
+                            command=partial(lambda x: self.__update_cheatcode_entries_on_select())
+                        )
         O.grid(row=row, column=column)
 
         return variable, O
+
+    def set_new_cheatcode_option(self, option):
+        #Update select_cheatcode for new game
+        grid_info = self.cheatcode_opt_menu.grid_info() 
+        self.cheatcode_opt_menu.destroy()
+        self.select_cheatcode, self.cheatcode_opt_menu = self.create_cheatcode_option_menu(
+                                                            master=self.root,
+                                                            row=grid_info["row"],
+                                                            column=grid_info["column"]
+                                                            )
+        self.__update_cheatcode_entries_on_select()
     
     def create_games_option_menu(self, row, column):
         variable = StringVar(self.root)
@@ -79,26 +106,17 @@ class GUI(UserInterface):
             names.append( game )
         O = tk.OptionMenu(  self.root,
                             variable,
-                            *names)
+                            *names,
+                            command=self.set_new_cheatcode_option)
         O.grid(row=row, column=column)
+        self.select_game_menu = variable
+        self.opt_menu = 0
+        self.select_cheatcode, self.cheatcode_opt_menu = self.create_cheatcode_option_menu(self.root, row=row+1, column=column)
         return variable, O
-    
+
     def create_buttons(self, row, column):
         frame = tk.Frame(self.root)
         frame.grid(row=row, column=column)
-
-        end = tk.Button(frame, 
-                        text="QUIT", 
-                        fg="red",
-                        command=partial(self.get_user_action, UserAction.END_PROGRAM) )
-        end.pack(side=tk.TOP)
-
-        show_all = tk.Button(frame,
-                        text="Print Games",
-                        width=10,
-                        command=partial(self.get_user_action, UserAction.SHOW_ALL_DATA_FROM_AR) )
-        show_all.pack(side=tk.TOP)
-        show_all.config(font=("Courier", 22))
 
         show_all = tk.Button(frame,
                         text="Modify",
@@ -111,19 +129,25 @@ class GUI(UserInterface):
                         text="Add Game",
                         width=10,
                         command=partial(self.get_user_action, UserAction.ADD_NEW_CHEAT) )
-        add_game.pack(side=tk.BOTTOM)
+        add_game.pack(side=tk.TOP)
         add_game.config(font=("Courier", 22))
+
+        end = tk.Button(frame, 
+                        text="QUIT",
+                        width=25, 
+                        fg="red",
+                        command=partial(self.get_user_action, UserAction.END_PROGRAM) )
+        end.pack(side=tk.BOTTOM)
 
     def init_for_interaction(self):
         self.root = tk.Tk()
 
-        self.addresses_entries_frame = self.create_cheatcodes_frame(master=self.root, row=2,column=2)
+        self.addresses_entries_frame = self.create_cheatcodes_frame(master=self.root, row=2, column=1)
 
         #TODO maybe instead of OptionMenu for the Games use ListBox?
-        self.new_game_name_entry = self.create_info_field(1, 50, row=1, column=1)
-        self.select_game_menu, self.opt_menu = self.create_games_option_menu(row=1, column=0)
-        self.create_buttons(row=0, column=0)
-        self.select_cheatcode, self.cheatcode_opt_menu = self.create_cheatcode_option_menu(self.root, row=2, column=2)
+        self.new_game_name_entry = self.create_info_field(1, 50, row=0, column=1)
+        self.select_game_menu, self.opt_menu = self.create_games_option_menu(row=0, column=0)
+        self.create_buttons(row=2, column=0)
         
 
     def interact(self):
@@ -235,41 +259,11 @@ class GUI(UserInterface):
     #TODO rename
     def fetch_model_data(self) -> []:
         mode = self.state
-
-        #DELETE
-        data_json = self.model.get_games_as_json()
-        data_dict = json.loads(data_json)
-        #^DELETE
-
         gui_data = []
 
         if mode == UserAction.END_PROGRAM:
             self.root.quit()
         elif mode == UserAction.SHOW_ALL_DATA_FROM_AR:
-
-            selected_game_name = self.select_game_menu.get()
-            #Update select_cheatcode for new game
-            # grid_info = self.cheatcode_opt_menu.grid_info() 
-            # self.cheatcode_opt_menu.destroy()
-            # self.select_cheatcode, self.cheatcode_opt_menu = self.create_cheatcode_option_menu(
-            #                                                     master=self.root,
-            #                                                     row=grid_info["row"],
-            #                                                     column=grid_info["column"]
-            #                                                     )
-
-            selected_cheat_code_name = self.select_cheatcode.get()
-            cheat_codes = self.model_data[selected_game_name]
-
-            #remove previous text
-            self.clear_gui()        
-            #TODO appending still nececessary?
-            gui_data.append(
-                self.insert_into_gui(
-                    selected_game_name,
-                    selected_cheat_code_name,
-                    cheat_codes[selected_cheat_code_name]
-                    )
-            )
 
             return gui_data
         elif mode == UserAction.PRINT_GAME:
@@ -287,11 +281,12 @@ class GUI(UserInterface):
         elif mode == UserAction.EXPORT_ALL_DATA:
             pass
         elif mode == UserAction.MODIFY_DATA:
-            pass
+            self.model_data = json.loads(self.model.get_games_as_json())
         elif mode == UserAction.ADD_NEW_CHEAT:
             grid_info = self.opt_menu.grid_info()
             self.opt_menu.destroy()
             self.select_game_menu, self.opt_menu = self.create_games_option_menu(row=grid_info["row"], column=grid_info["column"])
+            self.model_data = json.loads(self.model.get_games_as_json())
         else:
             print("View says: No Such UserAction")
             raise ValueError
