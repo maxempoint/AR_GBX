@@ -10,7 +10,7 @@ class UserAction(Enum):
     DELETE_SINGLE_GAME = 3
     END_PROGRAM = 4
     MODIFY_DATA = 5
-    ADD_NEW_CHEAT = 6
+    ADD_NEW_GAME = 6
     MOD_ADDRESS = 7
     PRINT_GAME = 8
     ERROR_MSG = 9

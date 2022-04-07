@@ -103,7 +103,7 @@ class Control:
         elif userAction == UserAction.END_PROGRAM:
             self.model.tear_down()
             exit(0)
-        elif userAction == UserAction.ADD_NEW_CHEAT:
+        elif userAction == UserAction.ADD_NEW_GAME:
             #parse data:
             self.check_data_from_UI(additional_data)
 
