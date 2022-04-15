@@ -76,9 +76,9 @@ class UserInterface(ABC):
         pass
     
     @abstractmethod
-    def get_user_action(self):
+    def prepare_and_exec_callback(self):
         pass
     
     @abstractmethod
-    def fetch_model_data(self):
+    def update_gui(self):
         pass

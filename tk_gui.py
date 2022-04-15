@@ -22,7 +22,6 @@ class GUI(UserInterface):
         self.traceback = None
 
         self.root = None
-        self.cheatcode_text = None
         self.addresses_entries_frame = None
         self.select_game_menu = None
         self.opt_menu = None
@@ -84,7 +83,7 @@ class GUI(UserInterface):
                                         command=tk._setit(
                                                         self.select_game_menu,
                                                         gamename,
-                                                        callback=self.set_new_cheatcode_option
+                                                        callback=self.update_cheatcode_menu #TODO replace with self.handle_game_option_selection
                                                         )
                                         )
 
@@ -101,7 +100,7 @@ class GUI(UserInterface):
             addresses = []
             #Note: If the new entry is not directly added to the model, a KeyValue Exception will be thrown
             #add directly to the model                                            
-            self.get_user_action(UserAction.MODIFY_DATA)
+            self.prepare_and_exec_callback(UserAction.MODIFY_DATA)
         else:
             cheat_codes = self.model_data[selected_game_name]
             addresses = cheat_codes[selected_cheat_code_name]
@@ -116,9 +115,9 @@ class GUI(UserInterface):
         if game_name == self.add_game_option_string:
             game_name = self.get_userinput_string("Type in the name of your new game")
             self.adding_game_to_menu(game_name)
-            self.get_user_action(UserAction.ADD_NEW_GAME)
+            self.prepare_and_exec_callback(UserAction.ADD_NEW_GAME)
             self.select_game_menu.set(game_name)
-        self.set_new_cheatcode_option(option)
+        self.update_cheatcode_menu(option)
 
     def create_cheatcode_option_menu(self, master, row, column):
         variable = StringVar(master)
@@ -132,7 +131,7 @@ class GUI(UserInterface):
         variable.set(first_cheatcode_name)
         names = []
         
-        #Adding '--Add New' Option
+        #Adding '--Add New--' Option
         names.append(self.add_cheatcode_option_string)
         for cheat in cheat_names:
             names.append( cheat )
@@ -145,7 +144,8 @@ class GUI(UserInterface):
 
         return variable, O
 
-    def set_new_cheatcode_option(self, option):
+    #updates menu respective to currently selected game
+    def update_cheatcode_menu(self, option):
         #Update select_cheatcode for new game
         grid_info = self.cheatcode_opt_menu.grid_info() 
         self.cheatcode_opt_menu.destroy()
@@ -183,7 +183,7 @@ class GUI(UserInterface):
         show_all = tk.Button(frame,
                         text="Modify",
                         width=10,
-                        command=partial(self.get_user_action, UserAction.MODIFY_DATA) )
+                        command=partial(self.prepare_and_exec_callback, UserAction.MODIFY_DATA) )
         show_all.pack(side=tk.TOP)
         show_all.config(font=("Courier", 22))
 
@@ -191,7 +191,7 @@ class GUI(UserInterface):
                         text="QUIT",
                         width=25, 
                         fg="red",
-                        command=partial(self.get_user_action, UserAction.END_PROGRAM) )
+                        command=partial(self.prepare_and_exec_callback, UserAction.END_PROGRAM) )
         end.pack(side=tk.BOTTOM)
 
     def init_for_interaction(self):
@@ -226,7 +226,7 @@ class GUI(UserInterface):
                                 "With data: \n\n" +
                                 str(data))
 
-    def get_user_action(self, useraction : UserAction):
+    def prepare_and_exec_callback(self, useraction : UserAction):
         self.state = useraction
         #Check if data is needed for the useraction
         if self.state in self.no_data_actions:
@@ -246,9 +246,9 @@ class GUI(UserInterface):
             self.traceback = traceback.format_exc()
             self.error = e
             self.state = UserAction.ERROR_MSG
-            self.fetch_model_data()
+            self.update_gui()
             return
-        return self.fetch_model_data()
+        self.update_gui()
 
 ###|--HUMBLE-OBJECT--|###
     #TODO this should be outside of the humble object...
@@ -267,7 +267,6 @@ class GUI(UserInterface):
     def get_userdata_input(self):
         #Get game name from current OptionMenu Selection
         game_name = self.select_game_menu.get()
-
         cheatcodes = {}
         new_addresses = []
 
@@ -304,20 +303,18 @@ class GUI(UserInterface):
 
 ###^--HUMBLE-OBJECT--^### 
 
-    #TODO rename
-    def fetch_model_data(self) -> []:
+    def update_gui(self):
         mode = self.state
         gui_data = []
 
         if mode == UserAction.END_PROGRAM:
             self.root.quit()
         elif mode == UserAction.SHOW_ALL_DATA_FROM_AR:
-
-            return gui_data
+            pass
         elif mode == UserAction.PRINT_GAME:
             for cheat in data.gameCheats:
                 try:
-                    print("Tk model.fetch_model_data(): " + cheat.get_gameName())
+                    print("Tk model.update_gui(): " + cheat.get_gameName())
                 except Exception as e:
                     print("Exception: " + e)
         elif mode == UserAction.ERROR_MSG:
