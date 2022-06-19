@@ -125,6 +125,8 @@ class GUI(UserInterface):
         game_name = self.select_game_menu.get()
     
         cheat_names = self.model_data[game_name]
+        if not list(cheat_names):
+            raise ValueError("No Cheatcode Data for GUI")
         first_cheatcode_name = list(cheat_names)[0]
         first_cheat_addresses = cheat_names[first_cheatcode_name]
         
@@ -193,6 +195,13 @@ class GUI(UserInterface):
                         fg="red",
                         command=partial(self.prepare_and_exec_callback, UserAction.END_PROGRAM) )
         end.pack(side=tk.BOTTOM)
+
+        ex = tk.Button(frame, 
+                        text="EXPORT",
+                        width=25, 
+                        fg="blue",
+                        command=partial(self.prepare_and_exec_callback, UserAction.EXPORT_ALL_DATA) )
+        ex.pack(side=tk.BOTTOM)
 
     def init_for_interaction(self):
         self.root = tk.Tk()

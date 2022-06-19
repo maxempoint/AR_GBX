@@ -164,6 +164,10 @@ class PythonDriver(AbstractDriverAR):
         file_handler.close()
 
         NUM_OF_GAMES = pack("<B",num_of_games) #TODO parse number from SOURCE_FILENAME
+        logging.info(f"No. of games: {NUM_OF_GAMES}")
+        if NUM_OF_GAMES[0] == 0:
+            logging.warning("Driver: Number of games is 0")
+            return
         
         logging.info("EXPORT CODES")
         logging.info("-------------")
@@ -182,13 +186,11 @@ class PythonDriver(AbstractDriverAR):
         # self.single_write_request(NUM_OF_GAMES + b'\x00\x00\x00\x00\x00\x00\x00')
         # result = self.single_read_request()
         req, res = self.write_and_read_request(NUM_OF_GAMES + b'\x00\x00\x00\x00\x00\x00\x00')
-        logging.info("After num of games is send: " + str(res))
-        if NUM_OF_GAMES[0] == 0:
-            return
+        logging.info("After num of games is send: " + str(res))        
 
         #3: write games and codes in loop
         for i in range(int(len(data_to_send)/8)):
-            #logging.info(data_to_send[i*8:8*(i+1)])
+            logging.info(data_to_send[i*8:8*(i+1)])
             self.single_write_request(data_to_send[i*8:8*(i+1)])
             logging.info(self.single_read_request())
         

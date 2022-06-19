@@ -31,7 +31,7 @@ class Model:
         return json.dumps(all_games)
 
     def get_num_of_games(self):
-        return len(self.gameCheats)
+        return len(self.game_cheats)
 
 ###--Manipulate-Internal-Data--###
 
@@ -43,7 +43,8 @@ class Model:
 
     def add_gamecheat(self, game_name, games_and_cheatcodes):
         gameCheat = GameCheat()
-        self.modify_gamecheat(gameCheat, game_name, games_and_cheatcodes)
+        game = self.modify_gamecheat(gameCheat, game_name, games_and_cheatcodes)
+        self.game_cheats.append(game)
     
     #parsing data for the model
     #games_and_cheats : {String : [HexStrings]}
@@ -57,8 +58,7 @@ class Model:
             game.set_cheatCodeName(cheatname)
             game.set_cheatCodeAddresses(cheatname, addresses)
 
-        self.game_cheats.append(game)
-        return
+        return game
 
     def delete_current_gamecheats(self):
         self.gameCheats = []
@@ -143,7 +143,7 @@ class Model:
   
     def write_data_to_device(self):
         self.write_data_to_file()
-        self.driver.write_data_to_device(self.gameCheatData.get_num_of_games())
+        self.driver.write_data_to_device(self.get_num_of_games())
 
     def read_data_from_device(self):
         self.driver.read_data() #writes to file imported_data.dat

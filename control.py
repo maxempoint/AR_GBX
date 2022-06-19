@@ -13,7 +13,7 @@ import logging
 
 class Control:
     def __init__(self, mock: bool, import_file: str, view_opt: str):
-        #logging.basicConfig(level=logging.INFO)
+        logging.basicConfig(level=logging.INFO)
         self.mock = mock
         EXPORT_FILENAME = "new_mod_data.dat"  
         IMPORT_FILENAME = import_file
@@ -123,7 +123,4 @@ if __name__ == "__main__":
     parser.add_argument('--if', type=str, dest='importfilename', default='imported_data.dat', help='File for saving device data')
     parser.add_argument('--view', type=str, dest='viewopt',default='tk_gui', help="select view options")
     args = parser.parse_args()
-    if args.mock:
-        control = Control(True, args.importfilename, args.viewopt)
-    else:
-        control = Control(False, args.importfilename, args.viewopt)
+    control = Control(args.mock, args.importfilename, args.viewopt)
