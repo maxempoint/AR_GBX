@@ -79,7 +79,7 @@ class GameCheat:
         return self.cheatCodeAddresses
 
 class Model:
-    def __init__(self, export_filename, import_filename, mock):
+    def __init__(self, export_filename: str, import_filename: str, mock: bool):
         self.SOURCE_FILENAME = import_filename
         self.EXPORT_FILENAME = export_filename
         logging.info("Export in Model " + self.EXPORT_FILENAME)
@@ -88,48 +88,48 @@ class Model:
         #Note: driver has to be initialized before gameCheatData parses the data
         self.driver = self.__init_driver(export_filename, import_filename, use_mock_data=mock)
 
-        self.game_cheats = []
+        self.game_cheats: list[GameCheat] = []
         self.parse_model_data()
     
 ###--Getter--##
         
-    def get_game(self, game_name):
+    def get_game(self, game_name: str) -> GameCheat:
         for g in self.game_cheats:
             if g.get_sanitized_game_name() == game_name:
                 return g
         raise ValueError(f"Game name {game_name} not found!")
     
-    def get_games_as_json(self):
+    def get_games_as_json(self) -> str:
         all_games = {}
         for g in self.game_cheats:
             all_games |= g.get_sanitized_game_data() #concat dictionaries
         return json.dumps(all_games)
 
-    def get_num_of_games(self):
+    def get_num_of_games(self) -> int:
         return len(self.game_cheats)
 
 ###--Manipulate-Internal-Data--###
 
     #This changes the type of the String-Data to Byte-Strings
     #Note: thereby the instances of GameCheat hold the appropriate data type for the driver interaction
-    def parse_for_model(self, data):
+    @staticmethod
+    def parse_for_model(data: str) -> bytes:
         b_data = data.ljust(20).encode()
         return b_data
 
-    def add_gamecheat(self, game_name, games_and_cheatcodes):
+    def add_gamecheat(self, game_name: str, games_and_cheatcodes: dict):
         gameCheat = GameCheat()
         game = self.modify_gamecheat(gameCheat, game_name, games_and_cheatcodes)
         self.game_cheats.append(game)
     
     #parsing data for the model
     #games_and_cheats : {String : [HexStrings]}
-    def modify_gamecheat(self, game, game_name, games_and_cheatcodes):
+    def modify_gamecheat(self, game: GameCheat, game_name: str, games_and_cheatcodes: dict) -> GameCheat:
         game.delete_cheats()
         game.set_gameName( self.parse_for_model( game_name ) )
         logging.info(games_and_cheatcodes)
-        for cheat in games_and_cheatcodes:
+        for cheat, addresses in games_and_cheatcodes.items():
             cheatname = self.parse_for_model( cheat )
-            addresses = games_and_cheatcodes[cheat]
             game.set_cheatCodeName(cheatname)
             game.set_cheatCodeAddresses(cheatname, addresses)
 
@@ -157,7 +157,8 @@ class Model:
                         #logging.info(addr_as_bytes)
                         file_handler.write( addr_as_bytes )
 
-    def transform_address_bytes_to_string(self, raw_address_bytes):
+    @staticmethod
+    def transform_address_bytes_to_string(raw_address_bytes: bytes) -> list[str]:
         addresses_array = []
         iu = iter_unpack(">I", raw_address_bytes)
         for char in iu:
@@ -165,7 +166,7 @@ class Model:
             addresses_array += a
 
         return addresses_array
-    
+
     # file -> internal_data; parsing data from file
     def parse_model_data(self):
         games_and_cheatcodes = {}
@@ -221,7 +222,8 @@ class Model:
         self.parse_model_data()
 
 ###--Driver-Stuff--###
-    def __init_driver(self, EXPORT_FILENAME, IMPORT_FILENAME, use_mock_data=True):
+    @staticmethod
+    def __init_driver(EXPORT_FILENAME: str, IMPORT_FILENAME: str, use_mock_data: bool = True):
         if use_mock_data:
             driver = driverAR.PythonDriver(EXPORT_FILENAME, IMPORT_FILENAME, mock=True)
         else:
