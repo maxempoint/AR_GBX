@@ -92,15 +92,10 @@ class PythonDriver(AbstractDriverAR):
         #     self.dev.set_configuration(self.cfg_desired)
 
     def __write_data_to_file(self,data):
-        logging.info("In driverAR. This is the filename which the device data is written to: " + self.DATA_FILE)
-        f = open(self.DATA_FILE,'wb')
-        new = []
-        for elem in data:
-            for i in elem:
-                new.append(i)
-        f.write(bytes(new))
-        f.close()
-    
+        logging.info(f"In driverAR. This is the filename which the device data is written to: {self.DATA_FILE}")
+        with open(self.DATA_FILE, "wb") as f:
+            f.write(bytes(list(itertools.chain(*data))))
+
     def single_read_request(self):
         try:
             ret = self.dev.read(self.ENDPOINT_ADDRESS_OUT,8,1000)
