@@ -15,7 +15,7 @@ class PythonDriver(AbstractDriverAR):
         self.mock = mock
         if mock:
             self.DATA_FILE = "mock_data.dat"
-            #TODO create driver self.dev stub 
+            # TODO create driver self.dev stub 
         else:
             self.DATA_FILE = import_filename
             self.dev, self.cfg_desired = self.__init_driver()
@@ -38,7 +38,7 @@ class PythonDriver(AbstractDriverAR):
     @staticmethod
     def __init_driver():
         # find our device
-        #Bus 002 Device 010: ID 05fd:daae InterAct, Inc. Game Shark
+        # Bus 002 Device 010: ID 05fd:daae InterAct, Inc. Game Shark
         idVendor = 0x5fd
         idProduct = 0xdaae
         dev = usb.core.find(idVendor=idVendor, idProduct=idProduct)
@@ -47,13 +47,13 @@ class PythonDriver(AbstractDriverAR):
         else:
             logging.info("GBA Link found")
 
-        #check if there is already a driver attached to the device
+        # check if there is already a driver attached to the device
         i = dev[0].interfaces()[0].bInterfaceNumber
         if dev.is_kernel_driver_active(i):
             dev.detach_kernel_driver(i)
             logging.info("Driver active!")
 
-        #set appropriate config
+        # set appropriate config
         cfg_desired = usb.util.find_descriptor(dev, bConfigurationValue=1)
         dev.set_configuration(cfg_desired)
         try:
@@ -64,7 +64,7 @@ class PythonDriver(AbstractDriverAR):
             dev.set_configuration(cfg_desired)
         return dev, cfg_desired
 
-    #From the libusb manual:
+    # From the libusb manual:
     #"get_active_configuration() will act as a lightweight device reset:
     # it will issue a SET_CONFIGURATION request using the current configuration,
     # causing most USB-related device state to be reset (altsetting reset to zero, endpoint halts cleared, toggles reset)."
@@ -118,16 +118,16 @@ class PythonDriver(AbstractDriverAR):
         return retW, retR
 
     def read_data(self):
-        #initiate upload
+        # initiate upload
         self.write_and_read_request(self.READ_CODE)
         
-        #send zeros for some reason...
+        # send zeros for some reason...
         self.write_and_read_request(self.ZERO)
 
-        #TODO Find out the semantics of this code DONTKNOWYET...
+        # TODO Find out the semantics of this code DONTKNOWYET...
         self.write_and_read_request(self.DONTKNOWYET)
 
-        #send zeros for some reason again...
+        # send zeros for some reason again...
         self.write_and_read_request(self.ZERO)
 
         loop_condition = True
@@ -135,20 +135,20 @@ class PythonDriver(AbstractDriverAR):
 
         while loop_condition:
             msg = b'\x00\x00\x00\x00\x00\x00\x00\x00'
-            ret = self.dev.write(self.ENDPOINT_ADDRESS_IN,msg,100) #here it is 100 wait time, before only 1 -> TODO new param for write_reat_request() ?
+            ret = self.dev.write(self.ENDPOINT_ADDRESS_IN,msg,100) # here it is 100 wait time, before only 1 -> TODO new param for write_reat_request() ?
             ret = self.single_read_request()
 
             data.append(ret)
 
-            #not nice: TODO change (maybe look at original driver/client?)
+            # not nice: TODO change (maybe look at original driver/client?)
             if ret == [11,11,11,11,20,20,20,20] or ret == [255, 255, 255, 255, 255, 255, 255, 255] or ret == [0,0,0,0,0,0,0,0]:
                 loop_condition = False
         
-        #message to indicate the end of the import of data from device
+        # message to indicate the end of the import of data from device
         self.write_and_read_request(self.END_WRITE_CODE)
         self.__get_and_set_usb_config()
-        #save cheat code data to a file
-        #logging.info("In driver. This is the read data from device: " + str(data))
+        # save cheat code data to a file
+        # logging.info("In driver. This is the read data from device: " + str(data))
         self.__write_data_to_file(data)
     
     
@@ -159,7 +159,7 @@ class PythonDriver(AbstractDriverAR):
         data_to_send = file_handler.read()
         file_handler.close()
 
-        NUM_OF_GAMES = pack("<B",num_of_games) #TODO parse number from SOURCE_FILENAME
+        NUM_OF_GAMES = pack("<B",num_of_games) # TODO parse number from SOURCE_FILENAME
         logging.info(f"No. of games: {NUM_OF_GAMES}")
         if NUM_OF_GAMES[0] == 0:
             logging.warning("Driver: Number of games is 0")
@@ -168,23 +168,23 @@ class PythonDriver(AbstractDriverAR):
         logging.info("EXPORT CODES")
         logging.info("-------------")
 
-        #1
+        # 1
         # self.single_write_request(self.WRITE_CODE)
         # logging.info(self.single_read_request())
         req, res = self.write_and_read_request(self.WRITE_CODE)
         logging.info("After WRITE_CODE is send: " + str(res))
-        #TODO find out why this is needed sometimes...
+        # TODO find out why this is needed sometimes...
         if res != [0,0,0,0,0,0,0,0]:
             req, res = self.write_and_read_request(self.WRITE_CODE)
             logging.info("After 2. WRITE_CODE is send: " + str(res))
 
-        #2: send num of games
+        # 2: send num of games
         # self.single_write_request(NUM_OF_GAMES + b'\x00\x00\x00\x00\x00\x00\x00')
         # result = self.single_read_request()
         req, res = self.write_and_read_request(NUM_OF_GAMES + b'\x00\x00\x00\x00\x00\x00\x00')
         logging.info("After num of games is send: " + str(res))        
 
-        #3: write games and codes in loop
+        # 3: write games and codes in loop
         for i in range(int(len(data_to_send)/8)):
             logging.info(data_to_send[i*8:8*(i+1)])
             self.single_write_request(data_to_send[i*8:8*(i+1)])

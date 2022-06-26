@@ -16,7 +16,7 @@ class UserAction(Enum):
     ERROR_MSG = 9
 
 
-#TODO diese values integrieren (-> in GameCheatData.parse_model_data)
+# TODO diese values integrieren (-> in GameCheatData.parse_model_data)
 class ParsingReturnValues(Enum):
     MODEL_DATA_ERROR = 0
     MODEL_DATA_CORRECT = 1

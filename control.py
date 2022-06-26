@@ -42,30 +42,30 @@ class Control:
         if len(data) != 10:
             raise ValueError(f"Hex Data {data} length {len(data)} is not correct")
     
-    #This format is checked:
+    # This format is checked:
     # {String : {String : [HexStrings]}}
     # {GameName : { Cheat00: [addr1, addr2, ...], Cheat01 : [...], ...} }
     @staticmethod
     def check_data_from_UI(additional_data: dict):
-        #check types
+        # check types
         if type(additional_data) is not dict:
             raise ValueError(f"Wrong data type of additional_data: {type(additional_data)} (should be dict)")
         for game_name in additional_data:
-            #Check length of game names
+            # Check length of game names
             if len(game_name) > 20:
                 raise ValueError(f"Game name {game_name} too long! (is: {len(game_name)}, max: 20)")
-            #Check type
+            # Check type
             if type(additional_data[game_name]) is not dict:
                 raise ValueError(f"Wrong data type of additional_data[game_name]: {type(additional_data[game_name])}")
-            #Check game_cheat names
+            # Check game_cheat names
             for cc in additional_data[game_name]:
                 if len(cc) > 20:
                     raise ValueError(f"Cheat name {cc} too long! (is: {len(cc)}, max: 20)")
                 for address in additional_data[game_name][cc]:
-                    #check type
+                    # check type
                     if type(address) is not str:
                         raise ValueError(f"Wrong data type of address {address}: {type(address)} (should be str)")
-                    #Check if address have the correct hex data format
+                    # Check if address have the correct hex data format
                     Control.check_hex_data(address)
 
 
@@ -97,25 +97,25 @@ class Control:
                 self.model.driver.read_data()
             else:
                 self.model.write_data_to_file()
-        #TODO DELETE_SINGLE_GAME
+        # TODO DELETE_SINGLE_GAME
         elif userAction == UserAction.END_PROGRAM:
             self.model.tear_down()
             exit(0)
         elif userAction == UserAction.ADD_NEW_GAME:
-            #parse data:
+            # parse data:
             self.check_data_from_UI(additional_data)
 
             game_name = list(additional_data)[0]
             games_and_cheatcodes = additional_data[game_name]
 
-            #add new game
+            # add new game
             self.model.add_gamecheat(game_name, games_and_cheatcodes)
             pass
         else:
             logging.info("Control says: Action is not possible")
 
 if __name__ == "__main__":
-    #get commandline arguments
+    # get commandline arguments
     parser = argparse.ArgumentParser()
     parser.add_argument('--mock', dest='mock', action='store_true', help="use real device or mock data")
     parser.add_argument('--if', type=str, dest='importfilename', default='imported_data.dat', help='File for saving device data')

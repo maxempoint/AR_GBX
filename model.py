@@ -85,7 +85,7 @@ class Model:
         logging.info("Export in Model " + self.EXPORT_FILENAME)
         logging.info("Import in Model " + self.SOURCE_FILENAME)
 
-        #Note: driver has to be initialized before gameCheatData parses the data
+        # Note: driver has to be initialized before gameCheatData parses the data
         self.driver = self.__init_driver(export_filename, import_filename, use_mock_data=mock)
 
         self.game_cheats: list[GameCheat] = []
@@ -102,7 +102,7 @@ class Model:
     def get_games_as_json(self) -> str:
         all_games = {}
         for g in self.game_cheats:
-            all_games |= g.get_sanitized_game_data() #concat dictionaries
+            all_games |= g.get_sanitized_game_data() # concat dictionaries
         return json.dumps(all_games)
 
     def get_num_of_games(self) -> int:
@@ -110,8 +110,8 @@ class Model:
 
 ###--Manipulate-Internal-Data--###
 
-    #This changes the type of the String-Data to Byte-Strings
-    #Note: thereby the instances of GameCheat hold the appropriate data type for the driver interaction
+    # This changes the type of the String-Data to Byte-Strings
+    # Note: thereby the instances of GameCheat hold the appropriate data type for the driver interaction
     @staticmethod
     def parse_for_model(data: str) -> bytes:
         b_data = data.ljust(20).encode()
@@ -122,8 +122,8 @@ class Model:
         game = self.modify_gamecheat(gameCheat, game_name, games_and_cheatcodes)
         self.game_cheats.append(game)
     
-    #parsing data for the model
-    #games_and_cheats : {String : [HexStrings]}
+    # parsing data for the model
+    # games_and_cheats : {String : [HexStrings]}
     def modify_gamecheat(self, game: GameCheat, game_name: str, games_and_cheatcodes: dict) -> GameCheat:
         game.delete_cheats()
         game.set_gameName( self.parse_for_model( game_name ) )
@@ -147,14 +147,14 @@ class Model:
                 file_handler.write( pack("<i", len(cheatcode.get_cheatCodeNames()) ) )
                 file_handler.write( bytes(cheatcode.get_gameName().decode(),'utf-8') )
                 for c in cheatcode.get_cheatCodeAddresses():
-                    #logging.info("In model.write_data_to_file: " + str(c))
+                    # logging.info("In model.write_data_to_file: " + str(c))
                     arr_of_addr = cheatcode.get_cheatCodeAddresses()[c]
                     file_handler.write( pack("<i", len(arr_of_addr)) )
                     file_handler.write( bytes(c.decode(),'utf-8') )
 
                     for addr in arr_of_addr:
                         addr_as_bytes = pack(">I", int(addr[2:],16) )
-                        #logging.info(addr_as_bytes)
+                        # logging.info(addr_as_bytes)
                         file_handler.write( addr_as_bytes )
 
     @staticmethod
@@ -202,7 +202,7 @@ class Model:
             logging.exception(e)
             return ParsingReturnValues.FILENAME_ERROR
 
-        #Parse Data into individual GameCheat Objects <-- TODO necessary?? (maybe do the parsing in the for-loop above and not here again..)
+        # Parse Data into individual GameCheat Objects <-- TODO necessary?? (maybe do the parsing in the for-loop above and not here again..)
         for game_name in games_and_cheatcodes:
             gameCheat = GameCheat()
             gameCheat.set_gameName(game_name)
@@ -217,7 +217,7 @@ class Model:
         self.driver.write_data_to_device(self.get_num_of_games())
 
     def read_data_from_device(self):
-        self.driver.read_data() #writes to file imported_data.dat
+        self.driver.read_data() # writes to file imported_data.dat
         self.delete_current_gamecheats()
         self.parse_model_data()
 
@@ -229,9 +229,9 @@ class Model:
         else:
             logging.info("Model: in init_driver")
             driver = driverAR.PythonDriver(EXPORT_FILENAME, IMPORT_FILENAME, mock=False)
-            driver.read_data() #TODO parametrize driver.DATA_FILE
-            #TODO find out why driver.read_data() interferes with the write-operation...
-            #TODO interprocess communication (e.g. queue) instead of these files
+            driver.read_data() # TODO parametrize driver.DATA_FILE
+            # TODO find out why driver.read_data() interferes with the write-operation...
+            # TODO interprocess communication (e.g. queue) instead of these files
         return driver
 
     def tear_down(self):

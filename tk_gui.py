@@ -10,7 +10,7 @@ import json
 from abstract_classes import UserInterface, UserInput, UserAction, ParsingReturnValues, ViewTypes
 from model import GameCheat
 import queue
-#partial to invoke callback with arguments
+# partial to invoke callback with arguments
 from functools import partial
 
 
@@ -51,7 +51,7 @@ class GUI(UserInterface):
     def create_cheatcodes_frame(self, master, row, column):
         frame = tk.Frame(master=master)
         frame.grid(row=row, column=column)
-        for num_of_entry in range(10): #TODO define constant?
+        for num_of_entry in range(10): # TODO define constant?
             entry = tk.Entry(master=frame, width=50)
             entry.insert(tk.END, "")
             entry.pack()
@@ -83,7 +83,7 @@ class GUI(UserInterface):
                                         command=tk._setit(
                                                         self.select_game_menu,
                                                         gamename,
-                                                        callback=self.update_cheatcode_menu #TODO replace with self.handle_game_option_selection
+                                                        callback=self.update_cheatcode_menu # TODO replace with self.handle_game_option_selection
                                                         )
                                         )
 
@@ -93,13 +93,13 @@ class GUI(UserInterface):
         selected_cheat_code_name = self.select_cheatcode.get()
 
         if selected_cheat_code_name == self.add_cheatcode_option_string:
-            #pop dialog up for new cheat code name   
+            # pop dialog up for new cheat code name   
             selected_cheat_code_name = self.get_userinput_string("Type in the name of your new cheatcode")
-            #Adding new cheatcode option to option menu
+            # Adding new cheatcode option to option menu
             self.adding_cheatcode_to_menu(selected_cheat_code_name)
             addresses = []
-            #Note: If the new entry is not directly added to the model, a KeyValue Exception will be thrown
-            #add directly to the model                                            
+            # Note: If the new entry is not directly added to the model, a KeyValue Exception will be thrown
+            # add directly to the model                                            
             self.prepare_and_exec_callback(UserAction.MODIFY_DATA)
         else:
             cheat_codes = self.model_data[selected_game_name]
@@ -121,7 +121,7 @@ class GUI(UserInterface):
 
     def create_cheatcode_option_menu(self, master, row, column):
         variable = StringVar(master)
-        #Get currently selected game
+        # Get currently selected game
         game_name = self.select_game_menu.get()
     
         cheat_names = self.model_data[game_name]
@@ -133,7 +133,7 @@ class GUI(UserInterface):
         variable.set(first_cheatcode_name)
         names = []
         
-        #Adding '--Add New--' Option
+        # Adding '--Add New--' Option
         names.append(self.add_cheatcode_option_string)
         for cheat in cheat_names:
             names.append( cheat )
@@ -146,9 +146,9 @@ class GUI(UserInterface):
 
         return variable, O
 
-    #updates menu respective to currently selected game
+    # updates menu respective to currently selected game
     def update_cheatcode_menu(self, option):
-        #Update select_cheatcode for new game
+        # Update select_cheatcode for new game
         grid_info = self.cheatcode_opt_menu.grid_info() 
         self.cheatcode_opt_menu.destroy()
         self.select_cheatcode, self.cheatcode_opt_menu = self.create_cheatcode_option_menu(
@@ -163,7 +163,7 @@ class GUI(UserInterface):
         gameCheats = self.model_data
         variable.set(list(gameCheats)[0])
         names = []
-        #Adding a 'new game' option
+        # Adding a 'new game' option
         names.append(self.add_game_option_string)
 
         for game in gameCheats:
@@ -208,7 +208,7 @@ class GUI(UserInterface):
 
         self.addresses_entries_frame = self.create_cheatcodes_frame(master=self.root, row=2, column=1)
 
-        #TODO maybe instead of OptionMenu for the Games use ListBox?
+        # TODO maybe instead of OptionMenu for the Games use ListBox?
         self.select_game_menu, self.opt_menu = self.create_games_option_menu(row=0, column=0)
         self.create_buttons(row=2, column=0)
         
@@ -217,7 +217,7 @@ class GUI(UserInterface):
         self.init_for_interaction()
         self.root.mainloop()
 
-    #Error Message Pop up
+    # Error Message Pop up
     def error_msg_dialog(self):
         messagebox.showerror("ERROR", "An error occurred:\n" +
                             str(self.error) +
@@ -225,7 +225,7 @@ class GUI(UserInterface):
                             "Traceback\n" +
                             str(self.traceback) )
 
-    #Adds confirmation dialog before every action
+    # Adds confirmation dialog before every action
     def confirmation_dialog(self, useraction: UserAction, data):
         if self.TEST:
             return True
@@ -237,11 +237,11 @@ class GUI(UserInterface):
 
     def prepare_and_exec_callback(self, useraction : UserAction):
         self.state = useraction
-        #Check if data is needed for the useraction
+        # Check if data is needed for the useraction
         if self.state in self.no_data_actions:
             data = None
         elif self.state == UserAction.ADD_NEW_GAME:
-            #create empty cheatcode list for the new game
+            # create empty cheatcode list for the new game
             game_name = self.select_game_menu.get()
             data = {game_name: {'(m)':[]} }
             self.callback( UserInput(UserAction.ADD_NEW_GAME, data) )
@@ -260,26 +260,26 @@ class GUI(UserInterface):
         self.update_gui()
 
 ###|--HUMBLE-OBJECT--|###
-    #TODO this should be outside of the humble object...
-    #TODO This function assumes that the game already exists -> this must be assured
+    # TODO this should be outside of the humble object...
+    # TODO This function assumes that the game already exists -> this must be assured
     def __merge_userinput_with_old_data(self, game_name, cheatcode_name, new_addresses):
         cheat_names = self.model_data[game_name]
-        #Find changed cheat
+        # Find changed cheat
         cheat_names[cheatcode_name] = new_addresses
         return cheat_names
 
-    #This function should return a dict object, structured like this:
+    # This function should return a dict object, structured like this:
     # {String : {String : [HexStrings]}}
     # {GameName : { Cheat00: [addr1, addr2, ...], Cheat01 : [...], ...} }
     #
-    #Note: this function should give back a whole games+cheatcodes
+    # Note: this function should give back a whole games+cheatcodes
     def get_userdata_input(self):
-        #Get game name from current OptionMenu Selection
+        # Get game name from current OptionMenu Selection
         game_name = self.select_game_menu.get()
         cheatcodes = {}
         new_addresses = []
 
-        #Note: Only the currently selected cheatcode and its addresses are pull from the GUI        
+        # Note: Only the currently selected cheatcode and its addresses are pull from the GUI        
         cheatcode_entries = self.addresses_entries_frame.winfo_children()
         selected_cheat_code_name = self.select_cheatcode.get()
 

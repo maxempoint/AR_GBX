@@ -26,7 +26,7 @@ class TestModel(unittest.TestCase):
         b_data = data.ljust(20).encode()
         return b_data
 
-    #test if all ctrl messages are handled
+    # test if all ctrl messages are handled
     def test01_model_data_is_written_to_file(self):
         test_byte_data = [1, 0, 0, 0, 65, 32, 76, 97, 110, 100, 32, 66, 101, 102, 111, 114, 101, 32, 84, 105, 109, 101, 32, 32, 4, 0, 0, 0, 40, 109, 41, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 45, 99, 180, 189, 171, 43, 127, 99, 160, 89, 247, 31, 72, 69, 21, 39]
         self.model.add_gamecheat("A Land Before Time",
