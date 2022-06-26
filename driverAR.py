@@ -79,17 +79,17 @@ class PythonDriver(AbstractDriverAR):
         if cfg is None or cfg.bConfigurationValue != cfg_desired:
             self.dev.set_configuration(cfg_desired)
         return
-        try:
-            cfg = self.dev.get_active_configuration()
-            logging.info(cfg)
-        except usb.core.USBError:
-            logging.info("[!] USBError in get and set usb config")
-            logging.info(usb.core.USBError)
-            cfg = None
-        if cfg.bConfigurationValue != 0:
-            self.cfg_desired.bConfigurationValue = 0
-            logging.info(self.cfg_desired)
-            self.dev.set_configuration(self.cfg_desired)
+        # try:
+        #     cfg = self.dev.get_active_configuration()
+        #     logging.info(cfg)
+        # except usb.core.USBError:
+        #     logging.info("[!] USBError in get and set usb config")
+        #     logging.info(usb.core.USBError)
+        #     cfg = None
+        # if cfg.bConfigurationValue != 0:
+        #     self.cfg_desired.bConfigurationValue = 0
+        #     logging.info(self.cfg_desired)
+        #     self.dev.set_configuration(self.cfg_desired)
 
     def __write_data_to_file(self,data):
         logging.info("In driverAR. This is the filename which the device data is written to: " + self.DATA_FILE)
