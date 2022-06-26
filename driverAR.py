@@ -1,3 +1,4 @@
+import itertools
 from abstract_classes import AbstractDriverAR
 
 import usb.core
@@ -8,7 +9,7 @@ from struct import *
 import logging
 
 class PythonDriver(AbstractDriverAR):
-    def __init__(self, export_filename, import_filename, mock=False):
+    def __init__(self, export_filename: str, import_filename: str, mock: bool = False):
         logging.info("Export in PythonDriver " + export_filename)
         logging.info("Import in PythonDriver " + import_filename)
         self.mock = mock
@@ -34,7 +35,8 @@ class PythonDriver(AbstractDriverAR):
         
         self.SOURCE_FILENAME = export_filename
 
-    def __init_driver(self):
+    @staticmethod
+    def __init_driver():
         # find our device
         #Bus 002 Device 010: ID 05fd:daae InterAct, Inc. Game Shark
         idVendor = 0x5fd
@@ -60,7 +62,7 @@ class PythonDriver(AbstractDriverAR):
             cfg = None
         if cfg is None or cfg.bConfigurationValue != cfg_desired:
             dev.set_configuration(cfg_desired)
-        return (dev, cfg_desired)
+        return dev, cfg_desired
 
     #From the libusb manual:
     #"get_active_configuration() will act as a lightweight device reset:
@@ -93,7 +95,7 @@ class PythonDriver(AbstractDriverAR):
         #     logging.info(self.cfg_desired)
         #     self.dev.set_configuration(self.cfg_desired)
 
-    def __write_data_to_file(self,data):
+    def __write_data_to_file(self,data: list[list]):
         logging.info(f"In driverAR. This is the filename which the device data is written to: {self.DATA_FILE}")
         with open(self.DATA_FILE, "wb") as f:
             f.write(bytes(list(itertools.chain(*data))))
@@ -103,22 +105,19 @@ class PythonDriver(AbstractDriverAR):
             ret = self.dev.read(self.ENDPOINT_ADDRESS_OUT,8,1000)
             return ret.tolist()
         except Exception as e:
-            logging.info("Exception in single_read_request {0}".format(e))
+            logging.info(f"Exception in single_read_request {e}")
             return [-1]
     
-    def single_write_request(self, msg):
+    def single_write_request(self, msg: bytes):
         ret = self.dev.write(self.ENDPOINT_ADDRESS_IN,msg,100)
         return ret
 
-    def write_and_read_request(self, msg):
+    def write_and_read_request(self, msg: bytes):
         retW = self.single_write_request(msg)
         retR = self.single_read_request()
-        return (retW, retR)
+        return retW, retR
 
     def read_data(self):
-        dev = self.dev
-        ENDPOINT_ADDRESS_IN = self.ENDPOINT_ADDRESS_IN
-        RESULT = b''
         #initiate upload
         self.write_and_read_request(self.READ_CODE)
         
@@ -136,7 +135,7 @@ class PythonDriver(AbstractDriverAR):
 
         while loop_condition:
             msg = b'\x00\x00\x00\x00\x00\x00\x00\x00'
-            ret = dev.write(ENDPOINT_ADDRESS_IN,msg,100) #here it is 100 wait time, before only 1 -> TODO new param for write_reat_request() ?
+            ret = self.dev.write(self.ENDPOINT_ADDRESS_IN,msg,100) #here it is 100 wait time, before only 1 -> TODO new param for write_reat_request() ?
             ret = self.single_read_request()
 
             data.append(ret)
