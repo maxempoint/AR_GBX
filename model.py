@@ -3,6 +3,81 @@ import driverAR
 import logging
 import json
 
+
+class GameCheat:
+    def __init__(self):
+        # str
+        self.gameName = ''
+        # list of str
+        self.cheatCodesName = []
+        # dict with {cheatCodesName[i]: [list of str]}
+        self.cheatCodeAddresses = {}
+
+    def delete_cheats(self):
+        self.cheatCodesName = []
+        self.cheatCodeAddresses = {}
+
+    def set_gameName(self, name):
+        self.gameName = name
+
+    def set_cheatCodeName(self, cheatName):
+        if cheatName is not self.cheatCodesName:
+            self.cheatCodesName.append(cheatName)
+        else:
+            logging.warning("Cheat Code Name already exists!")
+
+    def set_cheatCodeAddresses(self, cheatName, addresses):
+        if cheatName in self.cheatCodesName:
+            self.cheatCodeAddresses[cheatName] = addresses
+        else:
+            logging.warning("Cheat Code Name is not set!")
+
+    def __stringify_data(self, data):
+        # remove bystring marks
+        if str(data)[0] == 'b':
+            stringified = str(data)[2:-1]
+        else:
+            stringified = str(data)
+        # remove unnecessary newlines
+        no_newlines = stringified.replace('\n', '')
+        no_parenth = no_newlines.replace('\'', '')
+        return no_parenth.strip()
+
+    def get_sanitized_game_data(self):
+        game = {}
+        san_cheatCodeAddresses = {}
+        for cc in self.cheatCodeAddresses:
+            san_cc = self.__stringify_data(cc)
+            san_cheatCodeAddresses[san_cc] = self.cheatCodeAddresses[cc]
+        san_gameName = self.__stringify_data(self.gameName)
+        game[san_gameName] = san_cheatCodeAddresses
+        return game
+
+    def get_sanitized_game_name(self):
+        return self.__stringify_data(self.gameName)
+
+    def get_sanitized_cheatCodeNames(self):
+        san_cheatcode_names = []
+        for cc in self.cheatCodesName:
+            san_cheatcode_names.append(self.__stringify_data(cc))
+        return san_cheatcode_names
+
+    def get_sanitized_cheatCodeAddresses(self):
+        san_cheatCodeAddresses = {}
+        for cc in self.cheatCodeAddresses:
+            san_cc = self.__stringify_data(cc)
+            san_cheatCodeAddresses[san_cc] = self.cheatCodeAddresses[cc]
+        return san_cheatCodeAddresses
+
+    def get_gameName(self):
+        return self.gameName
+
+    def get_cheatCodeNames(self):
+        return self.cheatCodesName
+
+    def get_cheatCodeAddresses(self):
+        return self.cheatCodeAddresses
+
 class Model:
     def __init__(self, export_filename, import_filename, mock):
         self.SOURCE_FILENAME = import_filename
@@ -161,77 +236,3 @@ class Model:
         self.delete_current_gamecheats()
         self.driver.exit_driver()
 
-
-class GameCheat:
-    def __init__(self):
-        #str
-        self.gameName = ''
-        #list of str
-        self.cheatCodesName = []
-        #dict with {cheatCodesName[i]: [list of str]}
-        self.cheatCodeAddresses = {}
-
-    def delete_cheats(self):
-        self.cheatCodesName = []
-        self.cheatCodeAddresses = {}
-
-    def set_gameName(self, name):
-        self.gameName = name
-    
-    def set_cheatCodeName(self, cheatName):
-        if cheatName is not self.cheatCodesName:
-            self.cheatCodesName.append(cheatName)
-        else:
-            logging.warning("Cheat Code Name already exists!")
-    
-    def set_cheatCodeAddresses(self, cheatName, addresses):
-        if cheatName in self.cheatCodesName:
-            self.cheatCodeAddresses[cheatName] = addresses
-        else:
-            logging.warning("Cheat Code Name is not set!")
-
-    def __stringify_data(self, data):
-        #remove bystring marks
-        if str(data)[0] == 'b':
-            stringified = str(data)[2:-1]
-        else:
-            stringified = str(data)
-        #remove unnecessary newlines
-        no_newlines = stringified.replace('\n', '')
-        no_parenth = no_newlines.replace('\'', '')
-        return no_parenth.strip()
-    
-    def get_sanitized_game_data(self):
-        game = {}
-        san_cheatCodeAddresses = {}
-        for cc in self.cheatCodeAddresses:
-            san_cc = self.__stringify_data(cc) 
-            san_cheatCodeAddresses[san_cc] = self.cheatCodeAddresses[cc]
-        san_gameName = self.__stringify_data(self.gameName)
-        game[san_gameName] = san_cheatCodeAddresses
-        return game
-    
-    def get_sanitized_game_name(self):
-        return self.__stringify_data(self.gameName)
-
-    def get_sanitized_cheatCodeNames(self):
-        san_cheatcode_names = []
-        for cc in self.cheatCodesName:
-            san_cheatcode_names.append(self.__stringify_data(cc))
-        return san_cheatcode_names
-
-    def get_sanitized_cheatCodeAddresses(self):
-        san_cheatCodeAddresses = {}
-        for cc in self.cheatCodeAddresses:
-            san_cc = self.__stringify_data(cc) 
-            san_cheatCodeAddresses[san_cc] = self.cheatCodeAddresses[cc]
-        return san_cheatCodeAddresses
-
-    def get_gameName(self):
-        return self.gameName
-    
-    def get_cheatCodeNames(self):
-        return self.cheatCodesName
-    
-    def get_cheatCodeAddresses(self):
-        return self.cheatCodeAddresses
