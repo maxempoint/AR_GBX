@@ -75,6 +75,8 @@ class Control:
         userAction = user_input["useraction"]
         additional_data = user_input["data"]
 
+
+        # TODO: switch to match clause if Python >= 3.10 is used
         if userAction == UserAction.NO_ACTION:
             return
         elif userAction == UserAction.MODIFY_DATA:
