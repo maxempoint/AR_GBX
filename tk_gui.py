@@ -9,14 +9,14 @@ import traceback
 import json
 
 from abstract_classes import UserInterface, UserInput, UserAction, ParsingReturnValues, ViewTypes
-from model import GameCheat
+from model import Model, GameCheat
 import queue
 # partial to invoke callback with arguments
 from functools import partial
 
 
 class GUI(UserInterface):
-    def __init__(self, callback, model, test=False):
+    def __init__(self, callback, model: Model, test: bool = False):
         self.TEST = test
         self.type = ViewTypes.TKINTER_GUI
         self.error = None
@@ -43,13 +43,14 @@ class GUI(UserInterface):
                                 UserAction.NO_ACTION,
                                 UserAction.END_PROGRAM]
     
-    def create_info_field(self, height, width, row, column):
+    def create_info_field(self, height: int, width: int, row: int, column: int) -> tk.Entry:
         T = tk.Entry(self.root, width=width)
         T.insert(tk.END,"")
         T.grid(row=row,column=column)
         return T
     
-    def create_cheatcodes_frame(self, master, row, column):
+    @staticmethod
+    def create_cheatcodes_frame(master: tk.Misc, row: int, column: int) -> tk.Frame:
         frame = tk.Frame(master=master)
         frame.grid(row=row, column=column)
         for num_of_entry in range(10): # TODO define constant?
@@ -58,14 +59,15 @@ class GUI(UserInterface):
             entry.pack()
         return frame
     
-    def get_userinput_string(self, string):
+    @staticmethod
+    def get_userinput_string(string: str) -> str:
         new_name = ''
         while new_name == '':
             new_name = simpledialog.askstring("User Input", string)
         return new_name
     
     
-    def adding_cheatcode_to_menu(self, cheatcodename):
+    def adding_cheatcode_to_menu(self, cheatcodename: str):
         self.select_cheatcode.set(cheatcodename)
         self.cheatcode_opt_menu["menu"].add_command(
                                                 label=cheatcodename,
@@ -76,7 +78,7 @@ class GUI(UserInterface):
                                                                 )
                                                 )
 
-    def adding_game_to_menu(self, gamename):
+    def adding_game_to_menu(self, gamename: str):
         self.clear_gui()
         self.select_game_menu.set(gamename)
         self.opt_menu["menu"].add_command(
@@ -120,7 +122,7 @@ class GUI(UserInterface):
             self.select_game_menu.set(game_name)
         self.update_cheatcode_menu(option)
 
-    def create_cheatcode_option_menu(self, master, row, column):
+    def create_cheatcode_option_menu(self, master: tk.Misc, row: int, column: int) -> tuple[StringVar, tk.OptionMenu]:
         variable = StringVar(master)
         # Get currently selected game
         game_name = self.select_game_menu.get()
@@ -148,7 +150,7 @@ class GUI(UserInterface):
         return variable, O
 
     # updates menu respective to currently selected game
-    def update_cheatcode_menu(self, option):
+    def update_cheatcode_menu(self, option): # TODO: unused parameter option
         # Update select_cheatcode for new game
         grid_info = self.cheatcode_opt_menu.grid_info() 
         self.cheatcode_opt_menu.destroy()
@@ -159,7 +161,7 @@ class GUI(UserInterface):
                                                             )
         self.__update_cheatcode_entries_on_select()
     
-    def create_games_option_menu(self, row, column):
+    def create_games_option_menu(self, row: int, column: int) -> tuple[StringVar, tk.OptionMenu]:
         variable = StringVar(self.root)
         gameCheats = self.model_data
         variable.set(list(gameCheats)[0])
@@ -179,7 +181,7 @@ class GUI(UserInterface):
         self.select_cheatcode, self.cheatcode_opt_menu = self.create_cheatcode_option_menu(self.root, row=row+1, column=column)
         return variable, O
 
-    def create_buttons(self, row, column):
+    def create_buttons(self, row: int, column: int):
         frame = tk.Frame(self.root)
         frame.grid(row=row, column=column)
 
@@ -236,7 +238,7 @@ class GUI(UserInterface):
                                 "With data: \n\n" +
                                 str(data))
 
-    def prepare_and_exec_callback(self, useraction : UserAction):
+    def prepare_and_exec_callback(self, useraction: UserAction): # TODO: update signature to match UserInterface
         self.state = useraction
         # Check if data is needed for the useraction
         if self.state in self.no_data_actions:
@@ -245,13 +247,13 @@ class GUI(UserInterface):
             # create empty cheatcode list for the new game
             game_name = self.select_game_menu.get()
             data = {game_name: {'(m)':[]} }
-            self.callback( UserInput(UserAction.ADD_NEW_GAME, data) )
+            self.callback( UserInput(UserAction.ADD_NEW_GAME, data) ) # TODO: resolve type missmatch (data: dict, expected: list[str])
         else:
             data = self.get_userdata_input()
         if not self.confirmation_dialog(useraction, data):
             return
         try:
-            self.callback( UserInput(useraction, data) )
+            self.callback( UserInput(useraction, data) ) # TODO: resolve type missmatch (data: dict, expected: list[str])
         except Exception as e:
             self.traceback = traceback.format_exc()
             self.error = e
@@ -263,7 +265,9 @@ class GUI(UserInterface):
 ###|--HUMBLE-OBJECT--|###
     # TODO this should be outside of the humble object...
     # TODO This function assumes that the game already exists -> this must be assured
-    def __merge_userinput_with_old_data(self, game_name, cheatcode_name, new_addresses):
+    # TODO: why does this function return a member of self?
+    #       any caller may as well call self.model_data after calling self.merge_userinput_with_old_data
+    def __merge_userinput_with_old_data(self, game_name: str, cheatcode_name: str, new_addresses: list) -> dict:
         cheat_names = self.model_data[game_name]
         # Find changed cheat
         cheat_names[cheatcode_name] = new_addresses
@@ -274,7 +278,7 @@ class GUI(UserInterface):
     # {GameName : { Cheat00: [addr1, addr2, ...], Cheat01 : [...], ...} }
     #
     # Note: this function should give back a whole games+cheatcodes
-    def get_userdata_input(self):
+    def get_userdata_input(self) -> dict:
         # Get game name from current OptionMenu Selection
         game_name = self.select_game_menu.get()
         cheatcodes = {}
@@ -299,7 +303,7 @@ class GUI(UserInterface):
             cheatcode_entry.delete("0",tk.END)
             cheatcode_entry.update()
 
-    def insert_into_gui(self, game_name, cheatcode_name, addresses):
+    def insert_into_gui(self, game_name: str, cheatcode_name: str, addresses: list) -> dict:
         cheatcode_entries = self.addresses_entries_frame.winfo_children()
         number_of_entries = len(cheatcode_entries)
         for index, address in enumerate(addresses):
@@ -317,12 +321,13 @@ class GUI(UserInterface):
         mode = self.state
         gui_data = []
 
+        # TODO: change to match clause if Python >= 3.10 is used
         if mode == UserAction.END_PROGRAM:
             self.root.quit()
         elif mode == UserAction.SHOW_ALL_DATA_FROM_AR:
             pass
         elif mode == UserAction.PRINT_GAME:
-            for cheat in data.gameCheats:
+            for cheat in data.gameCheats: # TODO: data is undefined!
                 try:
                     print("Tk model.update_gui(): " + cheat.get_gameName())
                 except Exception as e:
