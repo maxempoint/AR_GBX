@@ -33,7 +33,8 @@ class Control:
             raise ValueError(f"View Option {view_opt} not recognised!")
     
 
-    def check_hex_data(self, data: str):
+    @staticmethod
+    def check_hex_data(data: str):
         try:
             int(data, 16)
         except Exception as e:
@@ -44,7 +45,8 @@ class Control:
     #This format is checked:
     # {String : {String : [HexStrings]}}
     # {GameName : { Cheat00: [addr1, addr2, ...], Cheat01 : [...], ...} }
-    def check_data_from_UI(self, additional_data: dict):
+    @staticmethod
+    def check_data_from_UI(additional_data: dict):
         #check types
         if type(additional_data) is not dict:
             raise ValueError(f"Wrong data type of additional_data: {type(additional_data)} (should be dict)")
@@ -64,7 +66,7 @@ class Control:
                     if type(address) is not str:
                         raise ValueError(f"Wrong data type of address {address}: {type(address)} (should be str)")
                     #Check if address have the correct hex data format
-                    self.check_hex_data(address)
+                    Control.check_hex_data(address)
 
 
         return True
