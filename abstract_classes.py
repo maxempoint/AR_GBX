@@ -16,7 +16,7 @@ class UserAction(Enum):
     ERROR_MSG = 9
 
 
-#TODO diese values integrieren (-> in GameCheatData.parse_model_data)
+# TODO integrate these values (-> in GameCheatData.parse_model_data)
 class ParsingReturnValues(Enum):
     MODEL_DATA_ERROR = 0
     MODEL_DATA_CORRECT = 1
@@ -45,7 +45,7 @@ class AbstractDriverAR(ABC):
 
 ############--View--############
 
-class UserInput():
+class UserInput:
     def __init__(self, useraction: UserAction, data: list[str]):
         self.useraction_with_data = [UserAction.MODIFY_DATA,
                                     UserAction.DELETE_SINGLE_GAME,
@@ -53,19 +53,19 @@ class UserInput():
         self.useraction = useraction
         self.data = data
     
-    def is_user_input_needed(self):
+    def is_user_input_needed(self) -> bool:
         return self.useraction in self.useraction_with_data
     
     def set_data(self, data: list[str]):
         self.data += data
     
-    def get_data(self):
+    def get_data(self) -> list[str]:
         return self.data
     
-    def get_action(self):
+    def get_action(self) -> UserAction:
         return self.useraction
     
-    def get_action_and_data(self):
+    def get_action_and_data(self) -> dict:
         return {"useraction": self.get_action(), "data" : self.get_data()}
 
 
