@@ -153,7 +153,7 @@ class PythonDriver(AbstractDriverAR):
         self.__write_data_to_file(data)
     
     
-    def write_data_to_device(self, num_of_games):
+    def write_data_to_device(self, num_of_games: int): # TODO: change signature to match signature of AbstractDriverAR
         usb.util.dispose_resources(self.dev)
         logging.info("In driverAR.write_data_to_device. This file is read and its content written to the device "+ self.SOURCE_FILENAME)
         file_handler = open(self.SOURCE_FILENAME,'rb')
