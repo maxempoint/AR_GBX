@@ -22,7 +22,7 @@ class Model:
         for g in self.game_cheats:
             if g.get_sanitized_game_name() == game_name:
                 return g
-        raise ValueError()
+        raise ValueError(f"Game name {game_name} not found!")
     
     def get_games_as_json(self):
         all_games = {}
@@ -119,11 +119,11 @@ class Model:
                             cheatname_addressstring[NAME_CHEATCODE] = address_as_string_array
 
                         games_and_cheatcodes[GAME_NAME] = cheatname_addressstring
-                    except:
+                    except Exception as _:
                         break
 
         except Exception as e:
-            logging.info(e)
+            logging.exception(e)
             return ParsingReturnValues.FILENAME_ERROR
 
         #Parse Data into individual GameCheat Objects <-- TODO necessary?? (maybe do the parsing in the for-loop above and not here again..)

@@ -30,18 +30,16 @@ class Control:
             import tk_gui
             return tk_gui.GUI(self.get_user_input, self.model)
         else:
-            raise ValueError()
+            raise ValueError(f"View Option {view_opt} not recognised!")
     
 
     def check_hex_data(self, data):
         try:
             int(data, 16)
-        except:
-            logging.error("Hex Data not correct")
-            raise ValueError()
+        except Exception as e:
+            raise ValueError(f"Hex Data {data} is not valid hex: {e}")
         if len(data) != 10:
-            logging.error(f"Hex Data {data} length {len(data)} is not correct")
-            raise ValueError()
+            raise ValueError(f"Hex Data {data} length {len(data)} is not correct")
     
     #This format is checked:
     # {String : {String : [HexStrings]}}
@@ -49,26 +47,22 @@ class Control:
     def check_data_from_UI(self, additional_data):
         #check types
         if type(additional_data) is not dict:
-            logging.error(f"Wrong data type of additional_data: {type(additional_data)}")
-            raise ValueError()
+            raise ValueError(f"Wrong data type of additional_data: {type(additional_data)} (should be dict)")
         for game_name in additional_data:
             #Check length of game names
             if len(game_name) > 20:
-                raise ValueError()
+                raise ValueError(f"Game name {game_name} too long! (is: {len(game_name)}, max: 20)")
             #Check type
             if type(additional_data[game_name]) is not dict:
-                logging.error(f"Wrong data type of additional_data[game_name]: {type(additional_data[game_name])}")
-                raise ValueError()
+                raise ValueError(f"Wrong data type of additional_data[game_name]: {type(additional_data[game_name])}")
             #Check game_cheat names
             for cc in additional_data[game_name]:
                 if len(cc) > 20:
-                    raise ValueError()
+                    raise ValueError(f"Cheat name {cc} too long! (is: {len(cc)}, max: 20)")
                 for address in additional_data[game_name][cc]:
                     #check type
                     if type(address) is not str:
-                        logging.error(f"Wrong data type of address: {type(address)}")
-                        print(address)
-                        raise ValueError()
+                        raise ValueError(f"Wrong data type of address {address}: {type(address)} (should be str)")
                     #Check if address have the correct hex data format
                     self.check_hex_data(address)
 
