@@ -37,9 +37,11 @@ class PythonDriver(AbstractDriverAR):
     def __init_driver(self):
         # find our device
         #Bus 002 Device 010: ID 05fd:daae InterAct, Inc. Game Shark
-        dev = usb.core.find(idVendor=0x5fd, idProduct=0xdaae)
+        idVendor = 0x5fd
+        idProduct = 0xdaae
+        dev = usb.core.find(idVendor=idVendor, idProduct=idProduct)
         if dev is None:
-            raise ValueError('Device not found') 
+            raise ValueError(f'Device with vendor ID {idVendor} and product ID {idProduct} not found')
         else:
             logging.info("GBA Link found")
 
