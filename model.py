@@ -67,22 +67,20 @@ class Model:
     # internal_data -> file; write data in bytes format to file
     def write_data_to_file(self):
         logging.info("In model.write_data_to_file. This is the filename the data is written to: " + self.EXPORT_FILENAME)
-        file_handler = open(self.EXPORT_FILENAME, "wb")
-        for cheatcode in self.game_cheats:
-            file_handler.write( pack("<i", len(cheatcode.get_cheatCodeNames()) ) )
-            file_handler.write( bytes(cheatcode.get_gameName().decode(),'utf-8') )
-            for c in cheatcode.get_cheatCodeAddresses():
-                #logging.info("In model.write_data_to_file: " + str(c))
-                arr_of_addr = cheatcode.get_cheatCodeAddresses()[c]
-                file_handler.write( pack("<i", len(arr_of_addr)) )
-                file_handler.write( bytes(c.decode(),'utf-8') )
-               
-                for addr in arr_of_addr:
-                    addr_as_bytes = pack(">I", int(addr[2:],16) )
-                    #logging.info(addr_as_bytes)
-                    file_handler.write( addr_as_bytes )
+        with open(self.EXPORT_FILENAME, "wb") as file_handler:
+            for cheatcode in self.game_cheats:
+                file_handler.write( pack("<i", len(cheatcode.get_cheatCodeNames()) ) )
+                file_handler.write( bytes(cheatcode.get_gameName().decode(),'utf-8') )
+                for c in cheatcode.get_cheatCodeAddresses():
+                    #logging.info("In model.write_data_to_file: " + str(c))
+                    arr_of_addr = cheatcode.get_cheatCodeAddresses()[c]
+                    file_handler.write( pack("<i", len(arr_of_addr)) )
+                    file_handler.write( bytes(c.decode(),'utf-8') )
 
-        file_handler.close()
+                    for addr in arr_of_addr:
+                        addr_as_bytes = pack(">I", int(addr[2:],16) )
+                        #logging.info(addr_as_bytes)
+                        file_handler.write( addr_as_bytes )
 
     def transform_address_bytes_to_string(self, raw_address_bytes):
         addresses_array = []
@@ -97,39 +95,36 @@ class Model:
     def parse_model_data(self):
         games_and_cheatcodes = {}
         try:
-            file_handler = open(self.SOURCE_FILENAME,'rb')
+            with open(self.SOURCE_FILENAME, "rb") as file_handler:
+                # read games and cheatcodes
+                while True:
+                    # read num of cheatcodes (per game)
+                    try:
+                        num_of_cheatcodes = file_handler.read(4)[0]
+
+                        # read Game Name (5 * 4 bytes (buffered up with 0x20s))
+                        GAME_NAME = file_handler.read(5 * 4)
+
+                        cheatname_addressstring = {}
+                        ### Loop reading addresses
+                        for _ in range(num_of_cheatcodes):
+                            # read name of cheat code -> 5 * 4 bytes (buffered up with 0x20s)
+                            len_of_address = file_handler.read(4)[0]
+                            NAME_CHEATCODE = file_handler.read(5 * 0x4)
+
+                            # read addresses -> 4 bytes + len from previous read
+                            raw_address_bytes = file_handler.read(4 * len_of_address)
+                            # transform addresses from hex to ascii (little-endian)
+                            address_as_string_array = self.transform_address_bytes_to_string(raw_address_bytes)
+                            cheatname_addressstring[NAME_CHEATCODE] = address_as_string_array
+
+                        games_and_cheatcodes[GAME_NAME] = cheatname_addressstring
+                    except:
+                        break
+
         except Exception as e:
             logging.info(e)
             return ParsingReturnValues.FILENAME_ERROR
-
-        #read games and cheatcodes
-        while (True):
-            #read num of cheatcodes (per game)
-            try:
-                num_of_cheatcodes = file_handler.read(4)[0]
-                
-                #read Game Name (5 * 4 bytes (buffered up with 0x20s))
-                GAME_NAME = file_handler.read(5 * 4)
-
-                cheatname_addressstring = {}
-                ###Loop reading addresses
-                for _ in range(num_of_cheatcodes):
-                    #read name of cheat code -> 5 * 4 bytes (buffered up with 0x20s)
-                    len_of_address = file_handler.read(4)[0]
-                    NAME_CHEATCODE = file_handler.read(5 * 0x4)
-
-                    #read addresses -> 4 bytes + len from previous read
-                    raw_address_bytes = file_handler.read(4 * len_of_address)
-                    #transform addresses from hex to ascii (little-endian)
-                    address_as_string_array = self.transform_address_bytes_to_string(raw_address_bytes)
-                    cheatname_addressstring[NAME_CHEATCODE] = address_as_string_array
-
-                games_and_cheatcodes[GAME_NAME] = cheatname_addressstring
-            except:
-                break
-
-        #logging.info(self.games_and_cheatcodes)
-        file_handler.close()
 
         #Parse Data into individual GameCheat Objects <-- TODO necessary?? (maybe do the parsing in the for-loop above and not here again..)
         for game_name in games_and_cheatcodes:
