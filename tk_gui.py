@@ -1,3 +1,4 @@
+import logging
 import tkinter as tk
 from tkinter import StringVar
 from tkinter.messagebox import askyesno
