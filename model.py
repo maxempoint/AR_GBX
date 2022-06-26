@@ -10,7 +10,7 @@ class Model:
         logging.info("Export in Model " + self.EXPORT_FILENAME)
         logging.info("Import in Model " + self.SOURCE_FILENAME)
 
-        #Note: driver has to be initalized before gameCheatData parses the data
+        #Note: driver has to be initialized before gameCheatData parses the data
         self.driver = self.__init_driver(export_filename, import_filename, use_mock_data=mock)
 
         self.game_cheats = []
@@ -118,7 +118,7 @@ class Model:
                     len_of_address = file_handler.read(4)[0]
                     NAME_CHEATCODE = file_handler.read(5 * 0x4)
 
-                    #read addresses -> 4 bytes + len from previos read
+                    #read addresses -> 4 bytes + len from previous read
                     raw_address_bytes = file_handler.read(4 * len_of_address)
                     #transform addresses from hex to ascii (little-endian)
                     address_as_string_array = self.transform_address_bytes_to_string(raw_address_bytes)
