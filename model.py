@@ -100,7 +100,7 @@ class Model:
         raise ValueError(f"Game name {game_name} not found!")
     
     def get_games_as_json(self) -> str:
-        all_games = {}
+        all_games: Dict = {}
         for g in self.game_cheats:
             all_games |= g.get_sanitized_game_data() # concat dictionaries
         return json.dumps(all_games)

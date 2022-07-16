@@ -21,7 +21,7 @@ class PythonDriver(AbstractDriverAR):
             self.dev, self.cfg_desired = self.__init_driver()
 
 
-        self.gameCheats = []
+        self.gameCheats = [] # TODO: unused?
 
         self.ENDPOINT_ADDRESS_IN = 0x2
         self.ENDPOINT_ADDRESS_OUT = 0x81

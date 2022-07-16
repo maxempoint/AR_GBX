@@ -1,6 +1,8 @@
 from enum import Enum
 from abc import ABC, abstractmethod
 from struct import pack, iter_unpack
+from typing import Dict, List
+
 
 class UserAction(Enum):
     NO_ACTION = -1
@@ -46,7 +48,7 @@ class AbstractDriverAR(ABC):
 ############--View--############
 
 class UserInput:
-    def __init__(self, useraction: UserAction, data: list[str]):
+    def __init__(self, useraction: UserAction, data: Dict[str, Dict[str, List[str]]]):
         self.useraction_with_data = [UserAction.MODIFY_DATA,
                                     UserAction.DELETE_SINGLE_GAME,
                                     UserAction.MOD_ADDRESS]
@@ -56,10 +58,10 @@ class UserInput:
     def is_user_input_needed(self) -> bool:
         return self.useraction in self.useraction_with_data
     
-    def set_data(self, data: list[str]):
-        self.data += data
-    
-    def get_data(self) -> list[str]:
+    def set_data(self, data: Dict[str, Dict[str, List[str]]]):
+        self.data = {**self.data,  **data}
+
+    def get_data(self) -> Dict[str, Dict[str, List[str]]]:
         return self.data
     
     def get_action(self) -> UserAction:
