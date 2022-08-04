@@ -28,9 +28,9 @@ class TestGUI(unittest.TestCase):
     def stringify(self, string):
         return string.rstrip().decode()
 
-    #test if all ctrl messages are handled
+    # test if all ctrl messages are handled
     def test01_user_actions_present_data(self):
-        #Select game
+        # Select game
         gameCheats = self.model.game_cheats
 
         for cheat in gameCheats:
@@ -41,7 +41,7 @@ class TestGUI(unittest.TestCase):
             self.view.select_game_menu.set(game_name)
             gui_data = self.view.get_user_action(UserAction.SHOW_ALL_DATA_FROM_AR)
 
-            #Check data if UserInput data in callback_ret is correct
+            # Check data if UserInput data in callback_ret is correct
             self.assertEqual(game_name, gui_data[0]['game_name'])
 
     
@@ -57,13 +57,13 @@ class TestGUI(unittest.TestCase):
             self.view.select_game_menu.set(game_name)
             gui_data = self.view.get_user_action(UserAction.SHOW_ALL_DATA_FROM_AR)
 
-            #check if number of cheatcodes presented in GUI is the same as in the model:
-            #TODO check on the option menu now...
-            #self.assertEqual(len(gui_data), num_cheatcodes)
+            # check if number of cheatcodes presented in GUI is the same as in the model:
+            # TODO check on the option menu now...
+            # self.assertEqual(len(gui_data), num_cheatcodes)
 
-            #check if correct data is presented after fetch_model_data() (via humble object pattern)
+            # check if correct data is presented after fetch_model_data() (via humble object pattern)
             for insert in gui_data:
-                #correct cheatcode
+                # correct cheatcode
                 self.assertIn(  insert["cheatcodes"], 
                                 cheatcodes )
 
@@ -71,7 +71,7 @@ class TestGUI(unittest.TestCase):
                     if cc == insert["cheatcodes"]:
                         self.assertEqual(addresses[cc], insert["addresses"])
 
-    #TODO setup cheat data which can be modified
+    # TODO setup cheat data which can be modified
     def test03_modify_data(self):
         gameCheats = self.model.game_cheats
         gui_data = []
@@ -80,15 +80,15 @@ class TestGUI(unittest.TestCase):
         self.view.clear_gui()
 
         #>GUI gets data
-        #Insert mutltiple cheatcodes+addresses with the same game name
+        # Insert mutltiple cheatcodes+addresses with the same game name
         gui_data.append(self.view.insert_into_gui(test_game_name, "my_cheat_code00", ["0x0","0x1","0x2"]))
         gui_data.append(self.view.insert_into_gui(test_game_name, "my_cheat_code01", ["0x3","0x4","0x5"]))
         gui_data.append(self.view.insert_into_gui(test_game_name, "my_cheat_code02", ["0x4","0x7","0x8"]))
 
-        #Trigger the modify data action
+        # Trigger the modify data action
         self.view.get_user_action(UserAction.MODIFY_DATA)
 
-        #extract the data that was given to the insert_function
+        # extract the data that was given to the insert_function
         gui_cheatcodes = []
         gui_addresses = []
         gui_game_name = test_game_name
@@ -101,7 +101,7 @@ class TestGUI(unittest.TestCase):
         callback_cheatcodes = list(self.callback_ret["data"][callback_game_name].keys())
         callback_addresses = list(self.callback_ret["data"][callback_game_name].values())
 
-        #Check type
+        # Check type
         self.assertEqual(type( {"test" : {"c0" : ["1","2"]}} ),type( self.callback_ret["data"][callback_game_name] ))
 
         self.assertEqual(gui_game_name, callback_game_name)
