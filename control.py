@@ -10,13 +10,16 @@ from abstract_classes import UserInput
 import threading
 import argparse
 import logging
+import os
 
 class Control:
-    def __init__(self, mock: bool, import_file: str, view_opt: str):
+    def __init__(self, mock: bool, import_file: str, export_file: str, view_opt: str):
         logging.basicConfig(level=logging.INFO)
         self.mock = mock
-        EXPORT_FILENAME = "new_mod_data.dat"  
+        EXPORT_FILENAME = export_file
         IMPORT_FILENAME = import_file
+        self.check_file_exists(export_file)
+        self.check_file_exists(import_file)
         logging.info("Export in Control " + EXPORT_FILENAME)
         logging.info("Import in Control " + IMPORT_FILENAME)
         self.model = Model(EXPORT_FILENAME, IMPORT_FILENAME, mock)
@@ -24,6 +27,10 @@ class Control:
         self.view = self.select_view(view_opt)
         self.gui_thread = threading.Thread(target=self.view.interact)
         self.gui_thread.start()
+    
+    def check_file_exists(self, filename: str):
+        if not os.path.exists(filename):
+            raise ValueError(f"File '{filename}' does not exist or path is incorrect")
 
     def select_view(self, view_opt: str):
         if "tk_gui" == view_opt:
@@ -119,6 +126,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--mock', dest='mock', action='store_true', help="use real device or mock data")
     parser.add_argument('--if', type=str, dest='importfilename', default='imported_data.dat', help='File for saving device data')
+    parser.add_argument('--ef', type=str, dest='exportfilename', default='new_mod_data.dat', help='File for saving device data')
     parser.add_argument('--view', type=str, dest='viewopt',default='tk_gui', help="select view options")
     args = parser.parse_args()
-    control = Control(args.mock, args.importfilename, args.viewopt)
+    control = Control(args.mock, args.importfilename, args.exportfilename, args.viewopt)
