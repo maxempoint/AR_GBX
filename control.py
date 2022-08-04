@@ -125,8 +125,8 @@ if __name__ == "__main__":
     # get commandline arguments
     parser = argparse.ArgumentParser()
     parser.add_argument('--mock', dest='mock', action='store_true', help="use real device or mock data")
-    parser.add_argument('--if', type=str, dest='importfilename', default='imported_data.dat', help='File for saving device data')
-    parser.add_argument('--ef', type=str, dest='exportfilename', default='new_mod_data.dat', help='File for saving device data')
+    parser.add_argument('--if', type=str, dest='importfilename', default='imported_data.dat', help='File Model reads from (if not defautlt: Driver writes to)')
+    parser.add_argument('--ef', type=str, dest='exportfilename', default='new_mod_data.dat', help='File Model writes to and Driver reads from')
     parser.add_argument('--view', type=str, dest='viewopt',default='tk_gui', help="select view options")
     args = parser.parse_args()
     control = Control(args.mock, args.importfilename, args.exportfilename, args.viewopt)
