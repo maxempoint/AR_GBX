@@ -15,7 +15,7 @@ class TestDriver(unittest.TestCase):
         self.driver.exit_driver()
 
     def test01_write_data(self):
-        self.driver.write_data_to_device(1) #test data should only have one game
+        self.driver.write_data_to_device(1) # test data should only have one game
 
     def test02_read_data(self):
         self.driver.read_data()
