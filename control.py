@@ -12,6 +12,8 @@ import argparse
 import logging
 import os
 
+DEFAULT_IMPORT_FILE = 'imported_data.dat'
+
 class Control:
     def __init__(self, mock: bool, import_file: str, export_file: str, view_opt: str):
         logging.basicConfig(level=logging.INFO)
@@ -22,7 +24,8 @@ class Control:
         self.check_file_exists(import_file)
         logging.info("Export in Control " + EXPORT_FILENAME)
         logging.info("Import in Control " + IMPORT_FILENAME)
-        self.model = Model(EXPORT_FILENAME, IMPORT_FILENAME, mock)
+        is_import_file_used = (DEFAULT_IMPORT_FILE == import_file)
+        self.model = Model(EXPORT_FILENAME, IMPORT_FILENAME, mock, is_import_file_used)
 
         self.view = self.select_view(view_opt)
         self.gui_thread = threading.Thread(target=self.view.interact)
@@ -125,7 +128,7 @@ if __name__ == "__main__":
     # get commandline arguments
     parser = argparse.ArgumentParser()
     parser.add_argument('--mock', dest='mock', action='store_true', help="use real device or mock data")
-    parser.add_argument('--if', type=str, dest='importfilename', default='imported_data.dat', help='File Model reads from (if not defautlt: Driver writes to)')
+    parser.add_argument('--if', type=str, dest='importfilename', default=DEFAULT_IMPORT_FILE, help='File Model reads from (if not defautlt: Driver writes to)')
     parser.add_argument('--ef', type=str, dest='exportfilename', default='new_mod_data.dat', help='File Model writes to and Driver reads from')
     parser.add_argument('--view', type=str, dest='viewopt',default='tk_gui', help="select view options")
     args = parser.parse_args()

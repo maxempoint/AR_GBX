@@ -79,9 +79,10 @@ class GameCheat:
         return self.cheatCodeAddresses
 
 class Model:
-    def __init__(self, export_filename: str, import_filename: str, mock: bool):
+    def __init__(self, export_filename: str, import_filename: str, mock: bool, is_import_file_used: bool):
         self.SOURCE_FILENAME = import_filename
         self.EXPORT_FILENAME = export_filename
+        self.is_import_file_used = is_import_file_used
         logging.info("Export in Model " + self.EXPORT_FILENAME)
         logging.info("Import in Model " + self.SOURCE_FILENAME)
 
@@ -229,7 +230,8 @@ class Model:
         else:
             logging.info("Model: in init_driver")
             driver = driverAR.PythonDriver(EXPORT_FILENAME, IMPORT_FILENAME, mock=False)
-            driver.read_data() # TODO parametrize driver.DATA_FILE
+            if not is_import_file_used:
+                driver.read_data() # TODO parametrize driver.DATA_FILE
             # TODO find out why driver.read_data() interferes with the write-operation...
             # TODO interprocess communication (e.g. queue) instead of these files
         return driver
